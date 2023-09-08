@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "../include/IRCMessage.hpp"
 
 const int MAX_CLIENTS = 20; // Maximum number of clients
 
