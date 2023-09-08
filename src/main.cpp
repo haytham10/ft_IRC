@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
                 } else {
                     // Handle received data (e.g., parse IRC messages)
                     // You'll implement message handling here
-					parseMessage(buffer);
+					// parseMessage(buffer);
 
                     // Check if the received message contains the password
                     if (strstr(buffer, password) != nullptr) {
