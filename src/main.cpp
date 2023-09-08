@@ -80,7 +80,20 @@ int main(int argc, char* argv[]) {
                     std::cout << "New client connected." << std::endl;
 
                     // Send an authentication request to the client
-                    send(clientSocket, "Please enter the password:\r\n", 29, 0);
+                    send(clientSocket, "Please enter the password: ", 28, 0);
+
+					char receivedPassword[256];
+			 	    ssize_t bytesRead = recv(clientSocket, receivedPassword, sizeof(receivedPassword), 0);
+					// Check if received password matches the expected password
+					if (bytesRead > 0 && strncmp(receivedPassword, password, (bytesRead - 1)) == 0) {
+						// Password matches, proceed with connection
+						// Handle client communication
+						send(clientSocket, "Authentication successful. Welcome!\n", 37, 0);
+					} else {
+						// Password does not match, reject the connection
+						send(clientSocket, "Authentication failed. Closing connection.\n", 44, 0);
+						close(clientSocket);
+					}
                 }
             }
         }
@@ -91,7 +104,7 @@ int main(int argc, char* argv[]) {
                 // Handle data from the client
                 char buffer[512]; // Adjust buffer size as needed
                 int bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-                if (bytesRead <= 0) {
+                if (bytesRead == -1) {
                     // Handle client disconnect or error
                     close(fds[i].fd);
                     std::cout << "Client disconnected." << std::endl;
@@ -102,23 +115,7 @@ int main(int argc, char* argv[]) {
                 } else {
                     // Handle received data (e.g., parse IRC messages)
                     // You'll implement message handling here
-					// parseMessage(buffer);
-
-                    // Check if the received message contains the password
-                    if (strstr(buffer, password) != nullptr) {
-                        // Password matches, proceed with other commands
-                        // Implement your message processing logic here
-                    } else {
-                        // Password doesn't match, handle authentication failure
-                        // You can send an error message to the client and disconnect
-                        send(fds[i].fd, "Authentication failed. Disconnecting.\r\n", 38, 0);
-                        close(fds[i].fd);
-                        std::cout << "Authentication failed. Client disconnected." << std::endl;
-
-                        // Remove the client from the pollfd array
-                        fds[i] = fds[numClients];
-                        numClients--;
-                    }
+					IRCMessage msg(buffer);
                 }
             }
         }
