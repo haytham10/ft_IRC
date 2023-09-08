@@ -6,7 +6,11 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:26 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/05 23:29:27 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/08 01:21:39 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "../include/IRCMessage.hpp"
+
+IRCMessage::IRCMessage() {}
 

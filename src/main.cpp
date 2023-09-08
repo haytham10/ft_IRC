@@ -10,8 +10,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-const int MAX_CLIENTS = 10; // Maximum number of clients
-const int MAX_EVENTS = 10;  // Maximum events to poll
+const int MAX_CLIENTS = 20; // Maximum number of clients
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -102,6 +101,7 @@ int main(int argc, char* argv[]) {
                 } else {
                     // Handle received data (e.g., parse IRC messages)
                     // You'll implement message handling here
+					parseMessage(buffer);
 
                     // Check if the received message contains the password
                     if (strstr(buffer, password) != nullptr) {

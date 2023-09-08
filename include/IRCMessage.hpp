@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:29 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/05 23:34:14 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/08 01:26:02 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,27 +18,33 @@
 
 class IRCMessage
 {
-	
 	private:
-		std::string rawMessage_;
-		std::string prefix_;
-		std::string command_;
-		std::vector<std::string> parameters_;
-		bool valid_;
+		std::string prefix;
+		std::string command;
+		std::vector<std::string> params;
 
-		// Parse the raw IRC message
-		void parseMessage();
-		
+		void parseMsg(const std::string &msg);
+
 	public:
-		IRCMessage(const std::string& rawMessage);
+		IRCMessage(const std::string &msg)
+		{
+			parseMsg(msg);
+		}
 
-		// Getters for IRC message components
-		std::string getPrefix() const;
-		std::string getCommand() const;
-		std::vector<std::string> getParameters() const;
+		const std::string &getPrefix() const
+		{
+			return prefix;
+		}
 
-		// Check if the message is valid
-		bool isValid() const;
+		const std::string &getCommand() const
+		{
+			return command;
+		}
+
+		const std::vector<std::string> &getParams() const
+		{
+			return params;
+		}
 };
 
 #endif
