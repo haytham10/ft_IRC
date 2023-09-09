@@ -77,19 +77,22 @@ int main(int argc, char* argv[]) {
                     numClients++;
                     fds[numClients].fd = clientSocket;
                     fds[numClients].events = POLLIN;
-                    std::cout << "New client connected." << std::endl;
 
                     // Send an authentication request to the client
                     send(clientSocket, "Please enter the password: ", 28, 0);
 
 					char receivedPassword[256];
+
 			 	    ssize_t bytesRead = recv(clientSocket, receivedPassword, sizeof(receivedPassword), 0);
 					// Check if received password matches the expected password
+					
 					if (bytesRead > 0 && strncmp(receivedPassword, password, (bytesRead - 1)) == 0) {
 						// Password matches, proceed with connection
 						// Handle client communication
 						send(clientSocket, "Authentication successful. Welcome!\n", 37, 0);
-					} else {
+					}
+					else
+					{
 						// Password does not match, reject the connection
 						send(clientSocket, "Authentication failed. Closing connection.\n", 44, 0);
 						close(clientSocket);
@@ -112,7 +115,9 @@ int main(int argc, char* argv[]) {
                     // Remove the client from the pollfd array
                     fds[i] = fds[numClients];
                     numClients--;
-                } else {
+                }
+				else
+				{
                     // Handle received data (e.g., parse IRC messages)
                     // You'll implement message handling here
 					IRCMessage msg(buffer);
