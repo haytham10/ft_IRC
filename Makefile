@@ -1,6 +1,6 @@
 NAME = ircserv
 
-SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCConnection.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp
+SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCConnection.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp ./src/IRCCommands.cpp
 
 INC = ./include/IRCConnection.hpp ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp
 

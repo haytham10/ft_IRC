@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:29 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/09 23:55:03 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/11 02:53:31 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,27 +18,32 @@
 
 class IRCMessage
 {
-private:
-    std::string command;
-    std::vector<std::string> params;
+	private:
+		std::string command;
+		std::vector<std::string> params;
+		int count;
 
-    void parseMsg(const std::string &msg);
+	public:
+		void parseMsg(const std::string msg);
+		void cmd_caller();
+		/////////////////////////////
+		void	cmd_PASS();
+		/////////////////////////////
+		const std::string &getCommand() const
+		{
+			return command;
+		}
 
-public:
-    IRCMessage(const std::string &msg)
-    {
-        parseMsg(msg);
-    }
+		int getCount() const
+		{
+			return count;
+		}
 
-    const std::string &getCommand() const
-    {
-        return command;
-    }
+		const std::vector<std::string> &getParams() const
+		{
+			return params;
+		}
 
-    const std::vector<std::string> &getParams() const
-    {
-        return params;
-    }
 };
 
 #endif
