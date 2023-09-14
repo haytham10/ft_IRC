@@ -2,6 +2,7 @@
 
 void	IRCServer::setup_server()
 {
+	int opt = 1;
 
     // Create a socket
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -9,6 +10,20 @@ void	IRCServer::setup_server()
         perror("socket");
         exit(1);
     }
+
+	// Reuse the socket address
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR,  (char *) &opt, sizeof(opt))){
+		perror("setsockopt");
+		close(serverSocket);
+		exit(1);
+	}
+
+	// Make the server socket non-blocking
+	if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) == -1) {
+		perror("fcntl");
+		close(serverSocket);
+		exit(1);
+	}
 
     // Set up the server address
     struct sockaddr_in serverAddress;

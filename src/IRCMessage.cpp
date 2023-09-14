@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:26 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/11 01:54:25 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/14 04:00:43 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,10 +63,15 @@ void IRCMessage::parseMsg(const std::string rawMessage)
 	return ;
 }
 
-void IRCMessage::cmd_caller()
+void IRCMessage::authentication(IRCClient &client, IRCServer &server, IRCUser &user)
 {
 	
-	if (command == "PASS")
-		cmd_PASS();
-
+	if (client.getAuth() == 0 && command == "PASS")
+		cmd_PASS(client, server);
+	 if (client.getAuth() == 1 && command == "NICK")
+		cmd_NICK(client, user);
+	else if (client.getAuth() == 2 && command == "USER")
+		cmd_USER(client, user);
+	else
+		send(client.getFds().fd, "Please authenticate first!\n", 27, 0);
 }

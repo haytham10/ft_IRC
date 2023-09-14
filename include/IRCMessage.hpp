@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:29 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/11 02:53:31 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/14 03:59:46 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,11 @@
 
 #include <string>
 #include <vector>
+#include "../include/Client.hpp"
+#include "../include/IRCServer.hpp"
+
+class IRCClient;
+class IRCUser;
 
 class IRCMessage
 {
@@ -25,10 +30,12 @@ class IRCMessage
 
 	public:
 		void parseMsg(const std::string msg);
-		void cmd_caller();
-		/////////////////////////////
-		void	cmd_PASS();
-		/////////////////////////////
+		void authentication(IRCClient &client, IRCServer &server, IRCUser &user);
+		////////////// AUTH ///////////////
+		void	cmd_PASS(IRCClient &client, IRCServer &server);
+		void	cmd_NICK(IRCClient &client, IRCUser &user);
+		void	cmd_USER(IRCClient &client, IRCUser &user);
+		///////////////////////////////////
 		const std::string &getCommand() const
 		{
 			return command;

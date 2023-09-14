@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
         std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return 1;
     }
-
+	// protect port to be decimal only
 	IRCServer server(std::atoi(argv[1]), argv[2]);
 	server.setup_server();
 
