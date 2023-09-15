@@ -37,6 +37,7 @@ void IRCClient::setup_client(IRCServer &server)
                     numClients++;
                     fds[numClients].fd = clientSocket;
                     fds[numClients].events = POLLIN; // Listen for incoming data
+					std::cout << numClients << " clients connected!" << std::endl;
                 }
                 else
                     perror("accept");
@@ -48,27 +49,31 @@ void IRCClient::setup_client(IRCServer &server)
         {
             if (fds[i].revents & POLLIN)
             {
+				char buffer[512];
                 // Handle incoming data from the client (e.g., message parsing and command handling)
                 ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-                std::cout << "buffer: " << buffer << std::endl;
-                std::cout << "bytesRead: " << bytesRead << std::endl;
                 if (bytesRead != -1)
                 {
-                    msg.parseMsg(buffer);
-                    msg.authentication((*this), server, user);
-                    if (auth == 3)
-                    {
-                        fillUsers(user);
-                        auth = 0;
-                    }
-
                     // Process the received data (e.g., parse IRC messages and handle commands)
-                    std::string receivedData(buffer, bytesRead);
+                    msg.parseMsg(buffer);
 
                     // Implement message parsing and command handling here
+					msg.authentication((*this), server, user);					
+					if (auth == 3)
+					{
+						fillUsers(user);
+						auth = 0;
+					}
+					else if (msg.getCommand() != "PASS" && msg.getCommand() != "NICK" && msg.getCommand() != "USER")
+					{
+						if (user.getRegistered() == false)
+							send(fds[i].fd, "Please authenticate first!\n", 27, 0);
+					}
+
+					// clear message params
+					msg.clearParams();
 
                     // Example: Echo the received data back to the client
-                    send(fds[i].fd, buffer, bytesRead, 0);
                 }
                 else
                 {
@@ -81,6 +86,7 @@ void IRCClient::setup_client(IRCServer &server)
                     }
                     numClients--;
                 }
+
             }
         }
     }

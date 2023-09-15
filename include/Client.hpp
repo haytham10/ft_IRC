@@ -9,7 +9,8 @@ class IRCUser
 {
 	private:
 		std::string nick;
-		std::string user;
+		std::string username;
+		std::string realname;
 		bool registered;
 		bool nickSet;
 
@@ -36,6 +37,11 @@ class IRCUser
 			return nickSet;
 		}
 
+		bool getRegistered() const
+		{
+			return registered;
+		}
+
 		void setRegistered(bool registered)
 		{
 			this->registered = registered;
@@ -46,9 +52,24 @@ class IRCUser
 			this->nickSet = nickSet;
 		}
 
-		void setUser(std::string user)
+		void setUsername(std::string username)
 		{
-			this->user = user;
+			this->username = username;
+		}
+
+		std::string getUsername() const
+		{
+			return username;
+		}
+
+		void setRealname(std::string realname)
+		{
+			this->realname = realname;
+		}
+
+		std::string getRealname() const
+		{
+			return realname;
 		}
 
 };
@@ -58,7 +79,6 @@ class IRCClient
 	private:
 		int auth;
 		struct pollfd fds[MAX_CLIENTS + 1];
-		char buffer[512];
 		int numClients;
 		std::vector<IRCUser> users;
 

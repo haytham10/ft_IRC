@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:29 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/14 03:59:46 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/15 04:16:54 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <vector>
 #include "../include/Client.hpp"
 #include "../include/IRCServer.hpp"
+
+#define MAX_USERNAME_LENGTH 18
 
 class IRCClient;
 class IRCUser;
@@ -49,6 +51,12 @@ class IRCMessage
 		const std::vector<std::string> &getParams() const
 		{
 			return params;
+		}
+
+		void	clearParams()
+		{
+			this->params.clear();
+			count = 0;
 		}
 
 };
