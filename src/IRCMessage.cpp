@@ -63,12 +63,43 @@ void IRCMessage::parseMsg(const std::string rawMessage)
 	return ;
 }
 
-void IRCMessage::authentication(IRCClient &client, IRCServer &server, IRCUser &user)
+void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
 {
 	if (command == "PASS")
-		cmd_PASS(client, server, user);
+		cmd_PASS(client, server, userit);
 	else if (command == "NICK")
-		cmd_NICK(client, user);
+		cmd_NICK(client, userit);
 	else if (command == "USER")
-		cmd_USER(client, user);
+		cmd_USER(client, userit);
+}
+
+void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+	if (command == "JOIN")
+		cmd_JOIN(client, server, userit);
+	// else if (command == "PRIVMSG")
+	// 	cmd_PRIVMSG(client, server, userit);
+	// else if (command == "LIST")
+	// 	cmd_LIST(client, server, userit);
+	// else if (command == "MODE")
+	// 	cmd_MODE(client, server, userit);
+	// else if (command == "QUIT")
+	// 	cmd_QUIT(client, server, userit);
+	// else if (command == "KICK")
+	// 	cmd_KICK(client, server, userit);
+	// else if (command == "TOPIC")
+	// 	cmd_TOPIC(client, server, userit);
+	// else if (command == "AWAY")
+	// 	cmd_AWAY(client, server, userit);
+	// else if (command == "INVITE")
+	// 	cmd_INVITE(client, server, userit);
+	// else if (command == "PING")
+	// 	cmd_PING(client, server, userit);
+	// else if (command == "PONG")
+	// 	cmd_PONG(client, server, userit);
+	else
+	{
+		std::string msg = "ERROR :Unknown command\r\n";
+		send(userit->getSocket(), msg.c_str(), msg.length(), 0);
+	}
 }

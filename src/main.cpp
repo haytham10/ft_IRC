@@ -6,6 +6,9 @@
 #include "../include/IRCMessage.hpp"
 #include "../include/IRCServer.hpp"
 #include "../include/Client.hpp"
+//
+#include <stdlib.h>
+//
 
 int main(int argc, char* argv[])
 {
@@ -18,7 +21,9 @@ int main(int argc, char* argv[])
 	int port;
 	try
 	{
-		port = std::stoi(argv[1]);
+		//
+		port = atoi(argv[1]);
+		//
 	}
 	catch (std::exception &e)
 	{

@@ -1,14 +1,14 @@
 NAME = ircserv
 
-SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCConnection.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp ./src/IRCCommands.cpp
+SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCConnection.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp ./src/IRCCommands.cpp ./src/IRCChannels.cpp
 
-INC = ./include/IRCConnection.hpp ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp
+INC = ./include/IRCConnection.hpp ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp ./include/IRCChannels.hpp
 
 OBJS = $(SRCS:.cpp=.o)
 
-CC = c++
+CC = g++
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+CFLAGS = 
 
 all: $(NAME)
 

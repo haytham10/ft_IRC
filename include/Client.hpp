@@ -1,9 +1,10 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "../include/IRCMessage.hpp"
-#include "../include/IRCServer.hpp"
+#include "IRCMessage.hpp"
+#include "IRCServer.hpp"
 
+const int MAX_CLIENTS = 20; // Maximum number of clients
 
 class IRCUser
 {
@@ -15,6 +16,7 @@ class IRCUser
 		bool registered;
 		bool nickSet;
 		int auth;
+
 	public:
 
 		IRCUser()
@@ -23,7 +25,7 @@ class IRCUser
 			registered = false;
 			nickSet = false;
 		}
-		
+
 		int	getAuth() const
 		{
 			return auth;
@@ -32,14 +34,6 @@ class IRCUser
 		void setAuth(int auth)
 		{
 			this->auth = auth;
-			// if (auth == 0)
-			// {
-			// 	registered = false;
-			// 	nickSet = false;
-			// 	nick = "\0";
-			// 	username = "\0";
-			// 	realname = "\0";
-			// }
 		}
 
 		void setSocket(int fd)
@@ -107,8 +101,8 @@ class IRCUser
 class IRCClient
 {
 	private:
-		struct pollfd fds[MAX_CLIENTS + 1];
 		int numClients;
+		struct pollfd fds[MAX_CLIENTS + 1];
 		std::vector<IRCUser> users;
 
 	public:
@@ -116,6 +110,12 @@ class IRCClient
 		void	fillUsers(IRCUser &user)
 		{
 				users.push_back(user);
+		}
+
+		std::vector<IRCUser>::iterator getUsers(int i)
+		{
+			std::vector<IRCUser>::iterator it = users.begin();
+			return (it + i);
 		}
 
 		void setup_client(IRCServer &server);

@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include "../include/Client.hpp"
 #include "../include/IRCServer.hpp"
 
@@ -22,6 +23,7 @@
 
 class IRCClient;
 class IRCUser;
+class IRCServer;
 
 class IRCMessage
 {
@@ -32,11 +34,16 @@ class IRCMessage
 
 	public:
 		void parseMsg(const std::string msg);
-		void authentication(IRCClient &client, IRCServer &server, IRCUser &user);
+		void authentication(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void CmdHandler(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		////////////// AUTH ///////////////
-		void	cmd_PASS(IRCClient &client, IRCServer &server, IRCUser &user);
-		void	cmd_NICK(IRCClient &client, IRCUser &user);
-		void	cmd_USER(IRCClient &client, IRCUser &user);
+		void	cmd_PASS(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void	cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator userit);
+		void	cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator userit);
+		///////////////////////////////////
+
+		////////////// CMD ////////////////
+		void	cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		///////////////////////////////////
 		const std::string &getCommand() const
 		{
@@ -59,6 +66,15 @@ class IRCMessage
 			count = 0;
 		}
 
+		std::vector<std::string> splitString(const std::string& input, char delimiter)
+		{
+			std::vector<std::string> tokens;
+			std::istringstream stream(input);
+			std::string token;
+			while (std::getline(stream, token, delimiter))
+				tokens.push_back(token);
+			return tokens;
+		}
 };
 
 #endif

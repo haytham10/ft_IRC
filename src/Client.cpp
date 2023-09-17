@@ -1,5 +1,6 @@
 #include "../include/IRCServer.hpp"
 #include "../include/Client.hpp"
+#include "../include/IRCChannels.hpp"
 
 void IRCClient::setup_client(IRCServer &server)
 {
@@ -18,19 +19,24 @@ void IRCClient::setup_client(IRCServer &server)
         int ready = poll(fds, numClients + 1, -1);
         if (ready == -1)
         {
-            perror("poll");
+			perror("poll");
             break;
         }
         // Check for events on the server socket (new connection)
         if (fds[0].revents & POLLIN)
         {
-			std::cout << "SERVER FD: " << fds[0].fd << std::endl;
+		//	std::cout << "SERVER FD: " << fds[0].fd << std::endl;
             if (numClients < MAX_CLIENTS)
             {
                 // Accept a new client connection
                 struct sockaddr_in clientAddress;
                 socklen_t clientAddressLength = sizeof(clientAddress);
                 int clientSocket = accept(server.getSock(), (struct sockaddr *)&clientAddress, &clientAddressLength);
+			    IRCUser user;
+                user.setSocket(clientSocket);
+
+                //std::cout << "New connection from socket fd" << user.getSocket() << std::endl;
+                fillUsers(user);
                 if (clientSocket != -1)
                 {
                     // Add the new client to the pollfd array
@@ -39,7 +45,7 @@ void IRCClient::setup_client(IRCServer &server)
 					//user.setSocket(clientSocket);
                     fds[numClients].events = POLLIN; // Listen for incoming data
 					fds[numClients].revents = 0;
-					std::cout << numClients << " clients connected!" << std::endl;
+				//	std::cout << numClients << " clients connected!" << std::endl;
                 }
                 else
                     perror("accept");
@@ -49,38 +55,39 @@ void IRCClient::setup_client(IRCServer &server)
         // Handle events on client sockets
         for (int i = 1; i <= numClients; i++)
         {
-			IRCUser user;
             if (fds[i].revents & POLLIN)
             {
-			std::cout << "CLIENT FD: " << fds[i].fd << std::endl;
-				user.setSocket(fds[i].fd);
-				char buffer[512];
-				
+				char buffer[512];	
                 // Handle incoming data from the client (e.g., message parsing and command handling)
                 ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
                 if (bytesRead != -1)
                 {
-					std::cout << " -> i: " << i << " -> " << buffer << std::endl;
                     // Process the received data (e.g., parse IRC messages and handle commands)
                     msg.parseMsg(buffer);
 
-                    // Implement message parsing and command handling here
-					msg.authentication((*this), server, user);					
-					if (user.getAuth() == 3)
+                    // Implement user athentication here...
+					msg.authentication((*this), server, getUsers(i - 1));					
+					if (getUsers(i - 1)->getAuth() == 3)
 					{
-						fillUsers(user);
-						send(user.getSocket(), "You are now authenticated!\n", 27, 0);
-						user.setAuth(0);
+						send(getUsers(i - 1)->getSocket(), "You are now authenticated!\n", 27, 0);
+						getUsers(i - 1)->setAuth(69);
 					}
 					else if (msg.getCommand() != "PASS" && msg.getCommand() != "NICK" && msg.getCommand() != "USER")
 					{
-						if (user.getRegistered() == false)
+						if (getUsers(i - 1)->getRegistered() == false)
 							send(fds[i].fd, "Please authenticate first!\n", 27, 0);
 					}
 
+
+					// Handle the commands
+					if (getUsers(i - 1)->getRegistered() == true && getUsers(i - 1)->getAuth() == 69)
+						msg.CmdHandler((*this), server, getUsers(i - 1));
+
+
+
 					// clear message params
 					msg.clearParams();
-					//
+
                     // Example: Echo the received data back to the client
                 }
                 else
