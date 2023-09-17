@@ -8,18 +8,48 @@
 class IRCUser
 {
 	private:
+		int			fd;
 		std::string nick;
 		std::string username;
 		std::string realname;
 		bool registered;
 		bool nickSet;
-
+		int auth;
 	public:
 
 		IRCUser()
 		{
+			auth = 0;
 			registered = false;
 			nickSet = false;
+		}
+		
+		int	getAuth() const
+		{
+			return auth;
+		}
+
+		void setAuth(int auth)
+		{
+			this->auth = auth;
+			// if (auth == 0)
+			// {
+			// 	registered = false;
+			// 	nickSet = false;
+			// 	nick = "\0";
+			// 	username = "\0";
+			// 	realname = "\0";
+			// }
+		}
+
+		void setSocket(int fd)
+		{
+			this->fd = fd;
+		}
+
+		int	getSocket() const
+		{
+			return fd;
 		}
 
 		void setNick(std::string nick)
@@ -77,22 +107,11 @@ class IRCUser
 class IRCClient
 {
 	private:
-		int auth;
 		struct pollfd fds[MAX_CLIENTS + 1];
 		int numClients;
 		std::vector<IRCUser> users;
 
 	public:
-
-		int	getAuth() const
-		{
-			return auth;
-		}
-
-		void setAuth(int auth)
-		{
-			this->auth = auth;
-		}
 
 		void	fillUsers(IRCUser &user)
 		{

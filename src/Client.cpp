@@ -4,13 +4,13 @@
 void IRCClient::setup_client(IRCServer &server)
 {
     IRCMessage msg;
-    IRCUser user;
+	// IRCUser user;
 
     // Set up pollfd structures for server socket and clients
     fds[0].fd = server.getSock();
     fds[0].events = POLLIN; // Listen for incoming data
+	fds[0].revents = 0;
     numClients = 0;
-    auth = 0;
 
     while (true)
     {
@@ -21,10 +21,10 @@ void IRCClient::setup_client(IRCServer &server)
             perror("poll");
             break;
         }
-
         // Check for events on the server socket (new connection)
         if (fds[0].revents & POLLIN)
         {
+			std::cout << "SERVER FD: " << fds[0].fd << std::endl;
             if (numClients < MAX_CLIENTS)
             {
                 // Accept a new client connection
@@ -36,7 +36,9 @@ void IRCClient::setup_client(IRCServer &server)
                     // Add the new client to the pollfd array
                     numClients++;
                     fds[numClients].fd = clientSocket;
+					//user.setSocket(clientSocket);
                     fds[numClients].events = POLLIN; // Listen for incoming data
+					fds[numClients].revents = 0;
 					std::cout << numClients << " clients connected!" << std::endl;
                 }
                 else
@@ -47,22 +49,28 @@ void IRCClient::setup_client(IRCServer &server)
         // Handle events on client sockets
         for (int i = 1; i <= numClients; i++)
         {
+			IRCUser user;
             if (fds[i].revents & POLLIN)
             {
+			std::cout << "CLIENT FD: " << fds[i].fd << std::endl;
+				user.setSocket(fds[i].fd);
 				char buffer[512];
+				
                 // Handle incoming data from the client (e.g., message parsing and command handling)
                 ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
                 if (bytesRead != -1)
                 {
+					std::cout << " -> i: " << i << " -> " << buffer << std::endl;
                     // Process the received data (e.g., parse IRC messages and handle commands)
                     msg.parseMsg(buffer);
 
                     // Implement message parsing and command handling here
 					msg.authentication((*this), server, user);					
-					if (auth == 3)
+					if (user.getAuth() == 3)
 					{
 						fillUsers(user);
-						auth = 0;
+						send(user.getSocket(), "You are now authenticated!\n", 27, 0);
+						user.setAuth(0);
 					}
 					else if (msg.getCommand() != "PASS" && msg.getCommand() != "NICK" && msg.getCommand() != "USER")
 					{
@@ -72,7 +80,7 @@ void IRCClient::setup_client(IRCServer &server)
 
 					// clear message params
 					msg.clearParams();
-
+					//
                     // Example: Echo the received data back to the client
                 }
                 else

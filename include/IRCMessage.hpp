@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:29 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/15 04:16:54 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/17 10:38:25 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class IRCMessage
 		void parseMsg(const std::string msg);
 		void authentication(IRCClient &client, IRCServer &server, IRCUser &user);
 		////////////// AUTH ///////////////
-		void	cmd_PASS(IRCClient &client, IRCServer &server);
+		void	cmd_PASS(IRCClient &client, IRCServer &server, IRCUser &user);
 		void	cmd_NICK(IRCClient &client, IRCUser &user);
 		void	cmd_USER(IRCClient &client, IRCUser &user);
 		///////////////////////////////////

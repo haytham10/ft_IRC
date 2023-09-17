@@ -6,30 +6,34 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 01:56:05 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/15 05:25:02 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/17 11:51:04 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/IRCMessage.hpp"
 
-void IRCMessage::cmd_PASS(IRCClient &client, IRCServer &server)
+void IRCMessage::cmd_PASS(IRCClient &client, IRCServer &server, IRCUser &user)
 {
-	if (client.getAuth() == 0)
+	(void)client;
+	if (user.getAuth() == 0)
 	{
 		if (getCount() != 0 && getParams()[0] == server.getPassword())
 		{
-			client.setAuth(1);
+			std::cout << "ANA HNA" << std::endl;
+			user.setAuth(1);
+			std::cout << "ANA HNA " << user.getAuth() << std::endl;
 		}
 		else
-			send(client.getFds().fd, "Wrong password!\n", 16, 0);
+			send(user.getSocket(), "Wrong password!\n", 16, 0);
 	}
 	else
-		send(client.getFds().fd, "You are already authenticated with password!\n", 45, 0);
+		send(user.getSocket(), "You are already authenticated with password!\n", 45, 0);
 }
 
 void IRCMessage::cmd_NICK(IRCClient &client, IRCUser &user)
 {
-	if (client.getAuth() == 1)
+	std::cout << "ANA HMAR " << user.getAuth() << std::endl;
+	if (user.getAuth() == 1)
 	{
 		std::string str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 		
@@ -43,7 +47,7 @@ void IRCMessage::cmd_NICK(IRCClient &client, IRCUser &user)
 				{
 					user.setNick(getParams()[0]);
 					user.setNickSet(true); // set nick to true, so that we can't change it again
-					client.setAuth(2);
+					user.setAuth(2);
 				}
 				else
 				{
@@ -60,15 +64,15 @@ void IRCMessage::cmd_NICK(IRCClient &client, IRCUser &user)
 		else
 			send(client.getFds().fd, "No nickname given!\n", 19, 0);
 	}
-	else if (client.getAuth() == 2)
+	else if (user.getAuth() == 2)
 		send(client.getFds().fd, "You are already authenticated with nickname!\n", 45, 0);
 	else
-		send(client.getFds().fd, "Please authenticate with password first!\n", 41, 0);
+		send(user.getSocket(), "Please authenticate with password first!\n", 41, 0);
 }
 
 void IRCMessage::cmd_USER(IRCClient &client, IRCUser &user)
 {
-	if (client.getAuth() == 2)
+	if (user.getAuth() == 2)
 	{
 		if (getCount() >= 4)
 		{
@@ -101,12 +105,12 @@ void IRCMessage::cmd_USER(IRCClient &client, IRCUser &user)
 			user.setRegistered(true);
 
 			// Set client authentication level to 3
-			client.setAuth(3);
+			user.setAuth(3);
 		}
 		else
 			send(client.getFds().fd, "Not enough parameters for USER command!\n", 40, 0);
 	}
-	else if (client.getAuth() == 3)
+	else if (user.getAuth() == 3)
 		send(client.getFds().fd, "You are already authenticated with username!\n", 45, 0);
 	else
 		send(client.getFds().fd, "Please authenticate with nickname or password first!\n", 53, 0);

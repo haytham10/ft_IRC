@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:26 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/15 04:40:31 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/17 10:38:40 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void IRCMessage::parseMsg(const std::string rawMessage)
 void IRCMessage::authentication(IRCClient &client, IRCServer &server, IRCUser &user)
 {
 	if (command == "PASS")
-		cmd_PASS(client, server);
+		cmd_PASS(client, server, user);
 	else if (command == "NICK")
 		cmd_NICK(client, user);
 	else if (command == "USER")
