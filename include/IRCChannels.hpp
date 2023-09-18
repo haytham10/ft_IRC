@@ -33,8 +33,6 @@ class IRCChannel
 		std::vector<IRCUser> users; // Store pointers to std::vector<IRCUser>::iterator objects
 		std::vector<IRCUser> admins; // Store pointers to admin users
 		int userLimit;
-		bool isPrivate;
-		bool isSecret;
 		bool isInviteOnly;
 		bool isTopicSet;
 
@@ -45,8 +43,6 @@ class IRCChannel
 		const std::string& getTopic() const;
 		const std::string& getKey() const;
 		int getUserLimit() const;
-		bool isPrivateChannel() const;
-		bool isSecretChannel() const;
 		bool isInviteOnlyChannel() const;
 		bool isTopicSetChannel() const;
 
@@ -59,8 +55,6 @@ class IRCChannel
 		void setTopic(const std::string &newTopic);
 		void setKey(const std::string &newKey);
 		void setUserLimit(int limit);
-		void setPrivateChannel(bool isPrivate);
-		void setSecretChannel(bool isSecret);
 		void setInviteOnlyChannel(bool isInviteOnly);
 		void setTopicSetChannel(bool isTopicSet);
 

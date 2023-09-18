@@ -16,8 +16,6 @@ IRCChannel::IRCChannel(const std::string &channelName, std::vector<IRCUser>::ite
 	:name(channelName),
 	isTopicSet(false),
 	userLimit(0),
-	isPrivate(false),
-	isSecret(false),
 	isInviteOnly(false)
 {
     users.push_back(*creator); // Add the creator as an initial channel member
@@ -44,16 +42,6 @@ const std::string& IRCChannel::getKey() const
 int IRCChannel::getUserLimit() const
 {
     return userLimit;
-}
-
-bool IRCChannel::isPrivateChannel() const
-{
-    return isPrivate;
-}
-
-bool IRCChannel::isSecretChannel() const
-{
-    return isSecret;
 }
 
 bool IRCChannel::isInviteOnlyChannel() const
@@ -99,8 +87,6 @@ bool IRCChannel::removeUser(std::vector<IRCUser>::iterator user)
 	return false;
 }
 
-
-
 // Check if a user is in the channel
 bool IRCChannel::isUserInChannel(std::vector<IRCUser>::iterator user)
 {
@@ -129,18 +115,6 @@ void IRCChannel::setKey(const std::string &newKey)
 void IRCChannel::setUserLimit(int limit)
 {
     userLimit = limit;
-}
-
-// Set the channel as private
-void IRCChannel::setPrivateChannel(bool isPrivate)
-{
-    this->isPrivate = isPrivate;
-}
-
-// Set the channel as secret
-void IRCChannel::setSecretChannel(bool isSecret)
-{
-    this->isSecret = isSecret;
 }
 
 // Set the channel as invite-only

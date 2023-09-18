@@ -184,7 +184,7 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
                 else
                 {
                     // Check if a key is required and provided
-                    if (channel->getKey().empty() || (i < keys.size() && keys[i] == channel->getKey()))
+                    if (channel)
                     {
                         // Add the user to the channel
                         if (channel->addUser(userit))
@@ -203,7 +203,7 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
 						else
                         {
                             // Failed to add user to the channel (e.g., user limit reached)
-                            std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
+                            std::string errorMsg = "ERROR :Failed to join channel " + channelName + "(reached user limit)" + "\r\n";
                             send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
                         }
                     }
@@ -307,3 +307,160 @@ void IRCMessage::cmd_KICK(IRCClient &client, IRCServer &server, std::vector<IRCU
         send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
     }
 }
+
+void IRCMessage::cmd_MODE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+	try
+	{
+		// Check if the MODE command has the required parameters
+		if (getCount() < 1)
+			throw std::runtime_error("Not enough parameters for MODE command");
+
+		// Parse the channels from the MODE command parameters
+		std::vector<std::string> modeParams = splitString(getParams()[0], ',');
+		std::vector<std::string> modes;
+
+		if (getCount() > 1)
+		{
+			// Parse modes if provided
+			modes = splitString(getParams()[1], ',');
+		}
+
+		for (const std::string& channelParam : modeParams)
+		{
+			// Check if the channel names start with '#', and add return error if not available
+			std::string channelName;
+			if (channelParam[0] != '#')
+				throw std::runtime_error("Invalid channel name: " + channelParam);
+			else
+				channelName = channelParam;
+
+			// Get the channel from the server
+			IRCChannel* channel = server.getChannel(channelName);
+
+			if (!channel)
+				throw std::runtime_error("Channel doesn't exist");
+
+			// Check if the user is in the channel
+			if (!channel->isUserInChannel(userit))
+				throw std::runtime_error("You are not in the channel");
+
+			// Check if the user is an admin in the channel
+			if (!channel->isAdmin(userit))
+				throw std::runtime_error("You are not an admin in the channel");
+
+			// Iterate through the modes and set each one
+			for (const std::string& mode : modes)
+			{
+				if (mode == "+i")
+					channel->setInviteOnlyChannel(true);
+				else if (mode == "-i")
+					channel->setInviteOnlyChannel(false);
+				else if (mode == "+t")
+					channel->setTopicSetChannel(true);
+				else if (mode == "-t")
+					channel->setTopicSetChannel(false);
+				else if (mode == "+l")
+				{
+					if (getCount() < 3)
+						throw std::runtime_error("Not enough parameters for MODE command");
+					else
+					{
+						int limit = std::stoi(getParams()[2]);
+						channel->setUserLimit(limit);
+					}
+				}
+				else if (mode == "-l")
+					channel->setUserLimit(0);
+				else if (mode == "+k")
+				{
+					if (getCount() < 3)
+						throw std::runtime_error("Not enough parameters for MODE command");
+					else
+						channel->setKey(getParams()[2]);
+				}
+				else if (mode == "-k")
+					channel->setKey("");
+				else
+					throw std::runtime_error("Invalid mode: " + mode);
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		std::string errorMsg = "ERROR :" + std::string(e.what()) + "\r\n";
+		send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+	}
+}
+
+void IRCMessage::cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+    // Parse the parameters
+    std::vector<std::string> listParams = getParams();
+
+    // Check if the user provided channel names for filtering
+    if (listParams.size() > 0)
+    {
+        // Handle channel filtering based on the provided channel names
+        std::vector<std::string> channelNames = splitString(listParams[0], ',');
+
+        for (const std::string &channelName : channelNames)
+        {
+            // Get the channel from the server
+            const IRCChannel* channel = server.getChannel(channelName);
+
+            if (channel)
+            {
+                // You can construct and send channel information here
+                std::string channelInfo = "Channel: " + channel->getName();
+
+                // Check if the channel has a topic set
+                if (channel->isTopicSetChannel())
+                {
+                    channelInfo += " Topic: " + channel->getTopic();
+                }
+
+                // Add more information as needed (e.g., user count, modes, etc.)
+
+                // Send the channel information to the user as an RPL_LIST (322) numeric response
+                std::string listMsg = ":" + std::string("GEGA-CHAD IRC") + " 322 " + userit->getNick() + " " + channelInfo + "\r\n";
+                send(userit->getSocket(), listMsg.c_str(), listMsg.length(), 0);
+            }
+            else
+            {
+                // Channel doesn't exist
+                std::string errorMsg = "ERROR :Channel " + channelName + " doesn't exist\r\n";
+                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+            }
+        }
+    }
+    else
+    {
+        // Handle listing all channels (no channel filtering)
+        std::vector<IRCChannel*> channels = server.getChannels();
+
+        for (const IRCChannel *channel : channels)
+        {
+            // You can construct and send channel information here
+            std::string channelInfo = "Channel: " + channel->getName();
+
+            // Check if the channel has a topic set
+            if (channel->isTopicSetChannel())
+            {
+                channelInfo += " Topic: " + channel->getTopic();
+            }
+
+            // Add more information as needed (e.g., user count, modes, etc.)
+
+            // Send the channel information to the user as an RPL_LIST (322) numeric response
+            std::string listMsg = ":" + std::string("GEGA-CHAD IRC 322 ") + userit->getNick() + " " + channelInfo + "\r\n";
+            send(userit->getSocket(), listMsg.c_str(), listMsg.length(), 0);
+        }
+    }
+
+    // Send an end of list message as an RPL_LISTEND (323) numeric response
+    std::string endOfListMsg = ":" + std::string("GEGA-CHAD IRC 323 ") + userit->getNick() + " :End of LIST\r\n";
+    send(userit->getSocket(), endOfListMsg.c_str(), endOfListMsg.length(), 0);
+}
+
+

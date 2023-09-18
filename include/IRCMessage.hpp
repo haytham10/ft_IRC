@@ -45,6 +45,8 @@ class IRCMessage
 		////////////// CMD ////////////////
 		void	cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_KICK(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void	cmd_MODE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void	cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		///////////////////////////////////
 		const std::string &getCommand() const
 		{
