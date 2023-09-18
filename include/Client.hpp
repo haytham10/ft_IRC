@@ -118,6 +118,16 @@ class IRCClient
 			return (it + i);
 		}
 
+		IRCUser *getUser(std::string nickname)
+		{
+			for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+			{
+				if (it->getNick() == nickname)
+					return &(*it);
+			}
+			return NULL;
+		}
+
 		void setup_client(IRCServer &server);
 
 		struct pollfd	getFds() const

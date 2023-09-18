@@ -53,6 +53,8 @@ class IRCChannel
 		bool addUser(std::vector<IRCUser>::iterator user);
 		bool removeUser(std::vector<IRCUser>::iterator user);
 		bool isUserInChannel(std::vector<IRCUser>::iterator user);
+		bool isUserAvailable(IRCUser *user);
+		bool kickUser(IRCUser *user);
 
 		void setTopic(const std::string &newTopic);
 		void setKey(const std::string &newKey);

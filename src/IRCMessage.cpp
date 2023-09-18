@@ -77,6 +77,8 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 {
 	if (command == "JOIN")
 		cmd_JOIN(client, server, userit);
+	else if (command == "KICK")
+		cmd_KICK(client, server, userit);
 	// else if (command == "PRIVMSG")
 	// 	cmd_PRIVMSG(client, server, userit);
 	// else if (command == "LIST")
@@ -85,8 +87,6 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 	// 	cmd_MODE(client, server, userit);
 	// else if (command == "QUIT")
 	// 	cmd_QUIT(client, server, userit);
-	// else if (command == "KICK")
-	// 	cmd_KICK(client, server, userit);
 	// else if (command == "TOPIC")
 	// 	cmd_TOPIC(client, server, userit);
 	// else if (command == "AWAY")

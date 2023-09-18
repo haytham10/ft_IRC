@@ -88,8 +88,6 @@ bool IRCChannel::addUser(std::vector<IRCUser>::iterator user)
 // Remove a user from the channel
 bool IRCChannel::removeUser(std::vector<IRCUser>::iterator user)
 {
-	// Search for the user in the users vector
-	//std::vector<IRCUser>::iterator it = std::find(users.begin(), users.end(), user);
 	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
 	{
 		if (it->getNick() == user->getNick())
@@ -98,13 +96,6 @@ bool IRCChannel::removeUser(std::vector<IRCUser>::iterator user)
 			return true;
 		}
 	}
-
-	// if (it != users.end())
-	// {
-	// 	users.erase(it);
-	// 	return true;
-	// }
-
 	return false;
 }
 
@@ -113,8 +104,6 @@ bool IRCChannel::removeUser(std::vector<IRCUser>::iterator user)
 // Check if a user is in the channel
 bool IRCChannel::isUserInChannel(std::vector<IRCUser>::iterator user)
 {
-	// IRCUser* userPtr = &(*user);
-    // return std::find(users.begin(), users.end(), userPtr) != users.end();
 	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
 	{
 		if (it->getNick() == user->getNick())
@@ -180,7 +169,6 @@ void IRCChannel::addAdmin(std::vector<IRCUser>::iterator admin)
 void IRCChannel::removeAdmin(std::vector<IRCUser>::iterator admin)
 {
     // Search for the user in the admins vector
-    // std::vector<IRCUser>::iterator it = std::find(admins.begin(), admins.end(), admin);
 	for (std::vector<IRCUser>::iterator it = admins.begin(); it != admins.end(); ++it)
 	{
 		if (it->getNick() == admin->getNick())
@@ -189,22 +177,38 @@ void IRCChannel::removeAdmin(std::vector<IRCUser>::iterator admin)
 			return;
 		}
 	}
-
-    // if (it != admins.end())
-    // {
-    //     admins.erase(it);
-    // }
 }
 
 // Check if a user is an admin in the channel
 bool IRCChannel::isAdmin(std::vector<IRCUser>::iterator user)
 {
-	// IRCUser* userPtr = &(*user);
-    // return std::find(admins.begin(), admins.end(), userPtr) != admins.end();
 	for (std::vector<IRCUser>::iterator it = admins.begin(); it != admins.end(); ++it)
 	{
 		if (it->getNick() == user->getNick())
 			return true;
+	}
+	return false;
+}
+
+bool IRCChannel::isUserAvailable(IRCUser *user)
+{
+	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		if (it->getNick() == user->getNick())
+			return true;
+	}
+	return false;
+}
+
+bool IRCChannel::kickUser(IRCUser *user)
+{
+	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		if (it->getNick() == user->getNick())
+		{
+			users.erase(it);
+			return true;
+		}
 	}
 	return false;
 }

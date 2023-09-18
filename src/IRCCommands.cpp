@@ -141,16 +141,16 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
     {
         std::string channelParam = joinParams[i];
 
-        // Check if the channel names start with '#', and add '#' if not provided
+        // Check if the channel names start with '#', and return error if not available
         std::string channelName;
-        if (channelParam[0] != '#')
-        {
-            channelName = "#" + channelParam;
-        }
-        else
-        {
-            channelName = channelParam;
-        }
+		if (channelParam[0] != '#')
+		{
+			std::string errorMsg = "ERROR :Invalid channel name: " + channelParam + "\r\n";
+			send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+			return;
+		}
+		else
+			channelName = channelParam;
 
         // Check if the channel exists on the server
         IRCChannel *channel = server.getChannel(channelName);
@@ -190,14 +190,6 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
                             //     std::string topicMsg = ":" + "GEGA-CHAD IRC " + std::to_string(332) + " " + userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
                             //     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
                             // }
-
-                            // Send list of users in the channel
-                            // sendChannelUserList(userit->getSocket(), "GEGA-CHAD IRC", channelName, channel->getUsers());
-
-                            // // Send end of NAMES message
-                            // std::string endOfNamesMsg = ":" + "GEGA-CHAD IRC" + " " + std::to_string(366) + " " + userit->getNick() + " " + channelName + " :End of NAMES list\r\n";
-                            // send(userit->getSocket(), endOfNamesMsg.c_str(), endOfNamesMsg.length(), 0);
-                        }
                         else
                         {
                             // Failed to add user to the channel (e.g., user limit reached)
@@ -228,5 +220,80 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
             // std::string endOfNamesMsg = ":" + "GEGA-CHAD IRC" + " " + 366 + " " + userit->getNick() + " " + channelName + " :End of NAMES list\r\n";
             // send(userit->getSocket(), endOfNamesMsg.c_str(), endOfNamesMsg.length(), 0);
         }
+    }
+}
+
+void IRCMessage::cmd_KICK(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+    try
+	{
+        // Check if the KICK command has the required parameters
+        if (getCount() < 2)
+            throw std::runtime_error("Not enough parameters for KICK command");
+
+        // Parse the channels from the KICK command parameters
+        std::vector<std::string> kickParams = splitString(getParams()[0], ',');
+        std::vector<std::string> users;
+
+        if (getCount() > 1)
+		{
+            // Parse users if provided
+            users = splitString(getParams()[1], ',');
+        }
+
+        for (const std::string& channelParam : kickParams) {
+            // Check if the channel names start with '#', and add return error if not available
+            std::string channelName;
+			if (channelParam[0] != '#')
+				throw std::runtime_error("Invalid channel name: " + channelParam);
+			else
+				channelName = channelParam;
+
+            // Get the channel from the server
+            IRCChannel* channel = server.getChannel(channelName);
+
+            if (!channel) {
+                throw std::runtime_error("Channel doesn't exist");
+            }
+
+            // Check if the user is in the channel
+            if (!channel->isUserInChannel(userit)) {
+                throw std::runtime_error("You are not in the channel");
+            }
+
+            // Check if the user is an admin in the channel
+            if (!channel->isAdmin(userit)) {
+                throw std::runtime_error("You are not an admin in the channel");
+            }
+
+            // Iterate through the users and kick each one
+            for (const std::string& userName : users)
+			{
+                // Get the user from the server
+                IRCUser* user = client.getUser(userName);
+
+                if (!user)
+                    throw std::runtime_error("User doesn't exist: " + userName);
+
+                // Check if the user is in the channel
+                if (!channel->isUserAvailable(user))
+                    throw std::runtime_error("User is not in the channel: " + userName);
+
+                // Remove the user from the channel
+                if (channel->kickUser(user))
+				{
+                    // Send KICK message to the user
+                    std::string kickMsg = ":" + userit->getNick() + " KICK " + channelName + " " + user->getNick() + "\r\n";
+                    send(user->getSocket(), kickMsg.c_str(), kickMsg.length(), 0);
+                }
+				else
+                    throw std::runtime_error("Failed to kick user " + user->getNick() + " from channel " + channelName);
+            }
+        }
+    }
+	catch (const std::exception& e)
+	{
+        std::string errorMsg = "ERROR :" + std::string(e.what()) + "\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
     }
 }

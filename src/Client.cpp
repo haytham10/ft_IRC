@@ -5,7 +5,6 @@
 void IRCClient::setup_client(IRCServer &server)
 {
     IRCMessage msg;
-	// IRCUser user;
 
     // Set up pollfd structures for server socket and clients
     fds[0].fd = server.getSock();
@@ -42,10 +41,8 @@ void IRCClient::setup_client(IRCServer &server)
                     // Add the new client to the pollfd array
                     numClients++;
                     fds[numClients].fd = clientSocket;
-					//user.setSocket(clientSocket);
                     fds[numClients].events = POLLIN; // Listen for incoming data
 					fds[numClients].revents = 0;
-				//	std::cout << numClients << " clients connected!" << std::endl;
                 }
                 else
                     perror("accept");
@@ -106,3 +103,4 @@ void IRCClient::setup_client(IRCServer &server)
         }
     }
 }
+
