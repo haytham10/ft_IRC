@@ -190,7 +190,8 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
                             //     std::string topicMsg = ":" + "GEGA-CHAD IRC " + std::to_string(332) + " " + userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
                             //     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
                             // }
-                        else
+						}
+						else
                         {
                             // Failed to add user to the channel (e.g., user limit reached)
                             std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
