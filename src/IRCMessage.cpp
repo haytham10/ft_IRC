@@ -15,52 +15,57 @@
 
 std::string  focn(const std::string rawMessage)
 {
-	std::string ret;
-	size_t pos = 0;
-	
-	while (rawMessage[pos] != '\r' && rawMessage[pos] != '\n' && rawMessage[pos] != '\0')
-	{
-		ret += rawMessage[pos];
-		pos++;
-	}
-	return ret;
-	
+    // Find the first non-whitespace character from the beginning.
+    size_t start = rawMessage.find_first_not_of(" \t\r\n");
+
+    if (start == std::string::npos) {
+        // The string is all whitespace.
+        return "";
+    }
+
+    // Find the last non-whitespace character from the end.
+    size_t end = rawMessage.find_last_not_of(" \t\r\n");
+
+    // Extract the trimmed substring.
+    return rawMessage.substr(start, end - start + 1);
 }
 
 void IRCMessage::parseMsg(const std::string rawMessage)
 {
+    std::string msg = focn(rawMessage);
+
     size_t start = 0;
     size_t pos = 0;
-	count = 0;
-	std::string msg_7afi = focn(rawMessage);
-	pos = msg_7afi.find(' ');
-	if (pos != std::string::npos)
+    count = 0;
+
+    pos = msg.find(' ');
+    if (pos != std::string::npos)
 	{
-		command = msg_7afi.substr(start, pos - start);
-		start = pos + 1;
-	}
+        command = msg.substr(start, pos - start);
+        start = pos + 1;
+    }
 	else
 	{
-		command = msg_7afi;
-		return;
-	}
-	while (start < msg_7afi.length())
+        command = msg;
+        return;
+    }
+
+    while (start < msg.length())
 	{
-		pos = msg_7afi.find(' ', start);
-		if (pos != std::string::npos)
+        pos = msg.find(' ', start);
+        if (pos != std::string::npos)
 		{
-			params.push_back(msg_7afi.substr(start, pos - start));
-			start = pos + 1;
-			count++;
-		}
+            params.push_back(msg.substr(start, pos - start));
+            start = pos + 1;
+            count++;
+        }
 		else
 		{
-			params.push_back(msg_7afi.substr(start, msg_7afi.length() - start)); // last param
-			count++;
-			return ;
-		}
-	}
-	return ;
+            params.push_back(msg.substr(start, msg.length() - start)); // last param
+            count++;
+            return;
+        }
+    }
 }
 
 void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)

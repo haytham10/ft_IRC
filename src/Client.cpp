@@ -62,8 +62,12 @@ void IRCClient::setup_client(IRCServer &server)
                     // Process the received data (e.g., parse IRC messages and handle commands)
                     msg.parseMsg(buffer);
 
+					// clear buffer
+					memset(buffer, 0, sizeof(buffer));
+
                     // Implement user athentication here...
-					msg.authentication((*this), server, getUsers(i - 1));					
+					msg.authentication((*this), server, getUsers(i - 1));	
+
 					if (getUsers(i - 1)->getAuth() == 3)
 					{
 						send(getUsers(i - 1)->getSocket(), "You are now authenticated!\n", 27, 0);
@@ -74,7 +78,6 @@ void IRCClient::setup_client(IRCServer &server)
 						if (getUsers(i - 1)->getRegistered() == false)
 							send(fds[i].fd, "Please authenticate first!\n", 27, 0);
 					}
-
 
 					// Handle the commands
 					if (getUsers(i - 1)->getRegistered() == true && getUsers(i - 1)->getAuth() == 69)

@@ -63,7 +63,7 @@ class IRCMessage
 
 		void	clearParams()
 		{
-			this->params.clear();
+			params.clear();
 			count = 0;
 		}
 

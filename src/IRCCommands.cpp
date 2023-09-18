@@ -40,6 +40,8 @@ void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator user
 		{
 			if (getParams()[0].find_first_not_of(str) != std::string::npos)
 				send(userit->getSocket(), "Invalid nickname!\n", 18, 0);
+			else if (client.getUser(getParams()[0]))
+				send(userit->getSocket(), "Nickname already in use!\n", 25, 0);
 			else
 			{
 				if (userit->getNick().empty()) // if nick is empty, set it
@@ -56,7 +58,7 @@ void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator user
 						userit->setNickSet(true);
 					}
 					else
-						send(userit->getSocket(), "Nickname already in use!\n", 25, 0);
+						send(userit->getSocket(), "You already set a nickname!\n", 28, 0);
 				}
 			}
 		}
@@ -84,6 +86,13 @@ void IRCMessage::cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator user
 
 			// Extract username from the USER command
 			std::string username = getParams()[0];
+
+			// Make sure getParams()[1] and getParams()[2] have (0, *)
+			if (getParams()[1] != "0" || getParams()[2] != "*")
+			{
+				send(userit->getSocket(), "Invalid USER command parameters!\n", 33, 0);
+				return;
+			}
 
 			// Extract the real name, which may contain spaces
 			std::string realname = "";
