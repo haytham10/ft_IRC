@@ -69,8 +69,12 @@ bool IRCChannel::addUser(std::vector<IRCUser>::iterator user)
         return false; // Channel is full
     }
 
+	    // Check if the channel is invite-only and the user is invited
+    if (isInviteOnly && !isUserInvited(user->getNick()))
+        return false; // User is not invited
+
     // Check if user is already in the channel
-    if (!isUserInChannel(user))
+    if (!isUserInChannel(user) )
     {
         users.push_back(*user);
         return true; // User added successfully
@@ -196,4 +200,22 @@ bool IRCChannel::kickUser(IRCUser *user)
 		}
 	}
 	return false;
+}
+
+// Handle invite
+bool IRCChannel::inviteUser(const std::string& userName)
+{
+    // Check if the user is already invited
+    if (std::find(invited.begin(), invited.end(), userName) != invited.end())
+        return false; // User is already invited
+
+    // Add the user to the invited users list
+    invited.push_back(userName);
+    return true; // User has been invited
+}
+
+// Function to check if a user is invited to the channel
+bool IRCChannel::isUserInvited(const std::string& userName) const
+{
+	return std::find(invited.begin(), invited.end(), userName) != invited.end();
 }

@@ -171,76 +171,66 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
             }
             else
             {
-                // Check if the channel is invite-only
-                if (channel->isInviteOnlyChannel())
-                {
-					// TODO: Check if the user is invited to the channel
-                    std::string errorMsg = "ERROR :Channel " + channelName + " is invite-only\r\n";
-                    send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-                }
-                else
-                {
-					if (channel->isSecureChannel())
+				if (channel->isSecureChannel())
+				{
+					if (keys.size() > 0)
 					{
-						if (keys.size() > 0)
+						if (keys[i] == channel->getKey())
 						{
-							if (keys[i] == channel->getKey())
+							// Add the user to the channel
+							if (channel->addUser(userit))
 							{
-								// Add the user to the channel
-								if (channel->addUser(userit))
-								{
-									// Send JOIN message to the user
-									std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
-									send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
+								// Send JOIN message to the user
+								std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
+								send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
 
-									 // Send channel topic if set
-                           			 // if (channel->isTopicSetChannel())
-                           			 // {
-                          			 //     std::string topicMsg = ":" + "GEGA-CHAD IRC " + std::to_string(332) + " " + userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
-                            		 //     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
-                            		 // }
-								}
-								else
-								{
-									std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
-									send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-								}
+								//  Send channel topic if set
+                        		 if (channel->getTopic() != "")
+                       			 {
+                      			     std::string topicMsg = userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
+                        		     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+                        		 }
 							}
 							else
 							{
-								std::string errorMsg = "ERROR :Wrong key for channel " + channelName + "\r\n";
+								std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
 								send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
 							}
 						}
 						else
 						{
-							std::string errorMsg = "ERROR :Channel " + channelName + " is password protected\r\n";
+							std::string errorMsg = "ERROR :Wrong key for channel " + channelName + "\r\n";
 							send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
 						}
 					}
 					else
 					{
-						// Add the user to the channel
-						if (channel->addUser(userit))
-						{
-							// Send JOIN message to the user
-							std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
-							send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
-
-							// Send channel topic if set
-                           	// if (channel->isTopicSetChannel())
-                           	// {
-                          	//     std::string topicMsg = ":" + "GEGA-CHAD IRC " + std::to_string(332) + " " + userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
-                            //     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
-                            // }
-						}
-						else
-						{
-							std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
-							send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-						}
+						std::string errorMsg = "ERROR :Channel " + channelName + " is password protected\r\n";
+						send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
 					}
-                }
+				}
+				else
+				{
+					// Add the user to the channel
+					if (channel->addUser(userit))
+					{
+						// Send JOIN message to the user
+						std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
+						send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
+
+						// Send channel topic if set
+                       	if (channel->getTopic() != "")
+                      	{
+                      	    std::string topicMsg = userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
+                            send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+                        }
+					}
+					else
+					{
+						std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
+						send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+					}
+				}
             }
         }
         else
@@ -252,10 +242,6 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
             // Send JOIN message to the user
             std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
             send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
-
-            // // Send end of NAMES message since there are no other users in the new channel
-            // std::string endOfNamesMsg = ":" + "GEGA-CHAD IRC" + " " + 366 + " " + userit->getNick() + " " + channelName + " :End of NAMES list\r\n";
-            // send(userit->getSocket(), endOfNamesMsg.c_str(), endOfNamesMsg.length(), 0);
         }
     }
 }
@@ -480,7 +466,7 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
             if (getCount() > 1)
             {
                 // Check if the user has the necessary privileges to change the topic
-                if (channel->isAdmin(userit))
+                if (channel->isAdmin(userit) || channel->isTopicSetChannel())
                 {
                     // Extract the topic text from the message
                     std::string newTopic = getMessageText();
@@ -522,6 +508,74 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
     }
 }
 
+void IRCMessage::cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+    // Check if the INVITE command has the required parameters
+    if (getCount() < 2)
+    {
+        std::string errorMsg = "ERROR :Not enough parameters for INVITE command\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        return;
+    }
+
+    // Get the user and channel names from the command parameters
+    std::string userName = getParams()[0];
+    std::string channelName = getParams()[1];
+
+    // Check if the channel exists on the server
+    IRCChannel *channel = server.getChannel(channelName);
+
+    if (channel)
+    {
+        // Check if the user sending the invite is an admin in the channel
+        if (channel->isAdmin(userit))
+        {
+            // Get the user from the server
+            IRCUser *userToInvite = client.getUser(userName);
+
+            if (userToInvite)
+            {
+                // Check if the user is already in the channel
+                if (channel->isUserInChannel(static_cast<std::vector<IRCUser>::iterator>(userToInvite)))
+                {
+                    std::string errorMsg = "ERROR :User " + userName + " is already in channel " + channelName + "\r\n";
+                    send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+                }
+                else
+                {
+                    // Add the user to the invited list of the channel
+                    channel->inviteUser(userName);
+
+                    // Send RPL_INVITING numeric reply to the user who sent the invite
+                    std::string invitingMsg = userit->getNick() + " " + userName + " " + channelName + "\r\n";
+                    send(userit->getSocket(), invitingMsg.c_str(), invitingMsg.length(), 0);
+
+                    // Send INVITE message to the invited user
+                    std::string inviteMsg = ":" + userit->getNick() + " INVITE " + userName + " " + channelName + "\r\n";
+                    send(userToInvite->getSocket(), inviteMsg.c_str(), inviteMsg.length(), 0);
+                }
+            }
+            else
+            {
+                // User to invite does not exist, send ERR_NOSUCHNICK numeric reply
+                std::string errorMsg = "ERROR :No such user " + userName + "\r\n";
+                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+            }
+        }
+        else
+        {
+            // User does not have necessary privileges to invite, send ERR_CHANOPRIVSNEEDED numeric reply
+            std::string errorMsg = "ERROR :You do not have the necessary privileges to invite to channel " + channelName + "\r\n";
+            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
+        std::string errorMsg = "ERROR :No such channel " + channelName + "\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+    }
+}
 
 // void IRCMessage::cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
 // {

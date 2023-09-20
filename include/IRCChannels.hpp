@@ -32,6 +32,7 @@ class IRCChannel
 		std::string key;
 		std::vector<IRCUser> users; // Store pointers to std::vector<IRCUser>::iterator objects
 		std::vector<IRCUser> admins; // Store pointers to admin users
+		std::vector<std::string> invited; // store invited users through invite
 		int userLimit;
 		bool isInviteOnly;
 		bool isTopicSet;
@@ -65,6 +66,9 @@ class IRCChannel
 		void addAdmin(std::vector<IRCUser>::iterator admin);
 		void removeAdmin(std::vector<IRCUser>::iterator admin);
 		bool isAdmin(std::vector<IRCUser>::iterator user);
+
+		bool inviteUser(const std::string &name);
+		bool isUserInvited(const std::string& userName) const;
 
 		std::vector<std::string> splitString(const std::string& input, char delimiter);
 };
