@@ -52,7 +52,6 @@ class IRCServer
 		// Methods to manage channels
 		void 		addChannel(const IRCChannel& channel);
 		IRCChannel* getChannel(const std::string& name);
-
 };
 
 #endif

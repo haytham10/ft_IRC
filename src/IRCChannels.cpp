@@ -150,7 +150,6 @@ void IRCChannel::addAdmin(std::vector<IRCUser>::iterator admin)
     }
 }
 
-
 // Remove an admin from the channel
 void IRCChannel::removeAdmin(std::vector<IRCUser>::iterator admin)
 {

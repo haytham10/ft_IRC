@@ -455,6 +455,72 @@ void IRCMessage::cmd_MODE(IRCClient &client, IRCServer &server, std::vector<IRCU
 	}
 }
 
+void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+    // Check if the TOPIC command has the required parameters
+    if (getCount() < 1)
+    {
+        std::string errorMsg = "ERROR :Not enough parameters for TOPIC command\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        return;
+    }
+
+    // Get the channel name from the command parameters
+    std::string channelName = getParams()[0];
+
+    // Check if the channel exists on the server
+    IRCChannel *channel = server.getChannel(channelName);
+
+    if (channel)
+    {
+        // Check if the user is on the channel
+        if (channel->isUserInChannel(userit))
+        {
+            // Check if a new topic is provided
+            if (getCount() > 1)
+            {
+                // Check if the user has the necessary privileges to change the topic
+                if (channel->isAdmin(userit))
+                {
+                    // Extract the topic text from the message
+                    std::string newTopic = getMessageText();
+
+                    // Set the new topic for the channel
+                    channel->setTopic(newTopic);
+
+                    // Send RPL_TOPIC numeric reply to the user
+                    std::string topicMsg = userit->getNick() + " " + channelName + " :" + newTopic + "\r\n";
+                    send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+                }
+                else
+                {
+                    // User doesn't have privileges to change the topic
+                    std::string errorMsg = "ERROR :You do not have the necessary privileges to change the topic in channel " + channelName + "\r\n";
+                    send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+                }
+            }
+            else
+            {
+                // No new topic provided, send the current topic as an RPL_TOPIC numeric reply
+                std::string currentTopic = channel->getTopic();
+                std::string topicMsg = userit->getNick() + " " + channelName + " :" + currentTopic + "\r\n";
+                send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+            }
+        }
+        else
+        {
+            // User is not in the channel, send ERR_NOTONCHANNEL numeric reply
+            std::string errorMsg = "ERROR :You are not on channel " + channelName + "\r\n";
+            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
+        std::string errorMsg = "ERROR :No such channel " + channelName + "\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+    }
+}
 
 
 // void IRCMessage::cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)

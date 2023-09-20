@@ -60,6 +60,7 @@ class IRCChannel
 		void setInviteOnlyChannel(bool isInviteOnly);
 		void setTopicSetChannel(bool isTopicSet);
 		void setSecureChannel(bool isSecure);
+		void sendToChannel(std::string &msg, std::vector<IRCUser>::iterator sender);
 
 		void addAdmin(std::vector<IRCUser>::iterator admin);
 		void removeAdmin(std::vector<IRCUser>::iterator admin);
