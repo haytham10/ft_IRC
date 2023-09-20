@@ -96,6 +96,10 @@ class IRCUser
 			return realname;
 		}
 
+		void sendMsg(const std::string &message)
+		{
+   	 		send(this->fd, message.c_str(), message.length(), 0);
+		}
 };
 
 class IRCClient

@@ -70,6 +70,8 @@ class IRCChannel
 		bool inviteUser(const std::string &name);
 		bool isUserInvited(const std::string& userName) const;
 
+		void brodcastMsg(const std::string &msg, std::vector<IRCUser>::iterator sender);
+
 		std::vector<std::string> splitString(const std::string& input, char delimiter);
 };
 

@@ -219,3 +219,12 @@ bool IRCChannel::isUserInvited(const std::string& userName) const
 {
 	return std::find(invited.begin(), invited.end(), userName) != invited.end();
 }
+
+void IRCChannel::brodcastMsg(const std::string &msg, std::vector<IRCUser>::iterator sender)
+{
+	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		if (it->getNick() != sender->getNick())
+			it->sendMsg(msg);
+	}
+}

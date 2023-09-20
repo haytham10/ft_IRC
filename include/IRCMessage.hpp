@@ -49,6 +49,7 @@ class IRCMessage
 		void	cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void	cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		///////////////////////////////////
 		const std::string &getCommand() const
 		{
@@ -83,16 +84,14 @@ class IRCMessage
 
 		std::string getMessageText() const
 		{
-			std::string message = getParams().size() > 1 ? getParams()[1] : "";
-			size_t pos = message.find(":");
-			
-			if (pos != std::string::npos)
+			std::string msg;
+			for (int i = 1; i < count; i++)
 			{
-				// Extract the text after the ':' character
-				return message.substr(pos + 1);
+				msg += params[i];
+				if (i != count - 1)
+					msg += " ";
 			}
-			
-			return ""; // Return an empty string if ':' is not found
+			return msg;
 		}
 };
 

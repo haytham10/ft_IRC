@@ -577,74 +577,65 @@ void IRCMessage::cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IR
     }
 }
 
-// void IRCMessage::cmd_LIST(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
-// {
-//     // Parse the parameters
-//     std::vector<std::string> listParams = getParams();
+void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+    // Check if the PRIVMSG command has the required parameters
+    if (getCount() < 2)
+    {
+        std::string errorMsg = "ERROR :Not enough parameters for PRIVMSG command\r\n";
+        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        return;
+    }
 
-//     // Check if the user provided channel names for filtering
-//     if (listParams.size() > 0)
-//     {
-//         // Handle channel filtering based on the provided channel names
-//         std::vector<std::string> channelNames = splitString(listParams[0], ',');
+    // Get the target and message from the command parameters
+    std::string target = getParams()[0];
+    std::string message = getMessageText();
 
-//         for (const std::string &channelName : channelNames)
-//         {
-//             // Get the channel from the server
-//             const IRCChannel* channel = server.getChannel(channelName);
+    // Check if the target is a user or a channel
+    if (target[0] == '#')
+    {
+        // Target is a channel
+        IRCChannel *channel = server.getChannel(target);
 
-//             if (channel)
-//             {
-//                 // You can construct and send channel information here
-//                 std::string channelInfo = "Channel: " + channel->getName();
+        if (channel)
+        {
+            // Check if the user sending the message is in the channel
+            if (channel->isUserInChannel(userit))
+            {
+                // Send the message to all users in the channel
+                std::string msgToSend = ":" + userit->getNick() + " PRIVMSG " + target + " :" + message + "\r\n";
+                channel->brodcastMsg(msgToSend, userit);
+            }
+            else
+            {
+                // User is not in the channel, send ERR_NOTONCHANNEL numeric reply
+                std::string errorMsg = "ERROR :You are not on channel " + target + "\r\n";
+                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+            }
+        }
+        else
+        {
+            // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
+            std::string errorMsg = "ERROR :No such channel " + target + "\r\n";
+            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // Target is a user
+        IRCUser *targetUser = client.getUser(target);
 
-//                 // Check if the channel has a topic set
-//                 if (channel->isTopicSetChannel())
-//                 {
-//                     channelInfo += " Topic: " + channel->getTopic();
-//                 }
-
-//                 // Add more information as needed (e.g., user count, modes, etc.)
-
-//                 // Send the channel information to the user as an RPL_LIST (322) numeric response
-//                 std::string listMsg = ":" + std::string("GEGA-CHAD IRC") + " 322 " + userit->getNick() + " " + channelInfo + "\r\n";
-//                 send(userit->getSocket(), listMsg.c_str(), listMsg.length(), 0);
-//             }
-//             else
-//             {
-//                 // Channel doesn't exist
-//                 std::string errorMsg = "ERROR :Channel " + channelName + " doesn't exist\r\n";
-//                 send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-//             }
-//         }
-//     }
-//     else
-//     {
-//         // Handle listing all channels (no channel filtering)
-//         std::vector<IRCChannel*> channels = server.getChannels();
-
-//         for (const IRCChannel *channel : channels)
-//         {
-//             // You can construct and send channel information here
-//             std::string channelInfo = "Channel: " + channel->getName();
-
-//             // Check if the channel has a topic set
-//             if (channel->isTopicSetChannel())
-//             {
-//                 channelInfo += " Topic: " + channel->getTopic();
-//             }
-
-//             // Add more information as needed (e.g., user count, modes, etc.)
-
-//             // Send the channel information to the user as an RPL_LIST (322) numeric response
-//             std::string listMsg = ":" + std::string("GEGA-CHAD IRC 322 ") + userit->getNick() + " " + channelInfo + "\r\n";
-//             send(userit->getSocket(), listMsg.c_str(), listMsg.length(), 0);
-//         }
-//     }
-
-//     // Send an end of list message as an RPL_LISTEND (323) numeric response
-//     std::string endOfListMsg = ":" + std::string("GEGA-CHAD IRC 323 ") + userit->getNick() + " :End of LIST\r\n";
-//     send(userit->getSocket(), endOfListMsg.c_str(), endOfListMsg.length(), 0);
-// }
-
-
+        if (targetUser)
+        {
+            // Send the private message to the target user
+            std::string msgToSend = ":" + userit->getNick() + " PRIVMSG " + target + " :" + message + "\r\n";
+            send(targetUser->getSocket(), msgToSend.c_str(), msgToSend.length(), 0);
+        }
+        else
+        {
+            // Target user doesn't exist, send ERR_NOSUCHNICK numeric reply
+            std::string errorMsg = "ERROR :No such user " + target + "\r\n";
+            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+        }
+    }
+}

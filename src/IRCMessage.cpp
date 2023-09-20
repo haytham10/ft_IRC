@@ -90,12 +90,10 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 		cmd_TOPIC(client, server, userit);
 	else if (command == "INVITE")
 		cmd_INVITE(client, server, userit);
+	else if (command == "PRIVMSG")
+		cmd_PRIVMSG(client, server, userit);
 	// else if (command == "LIST")
 	// 	cmd_LIST(client, server, userit);
-	// else if (command == "PRIVMSG")
-	// 	cmd_PRIVMSG(client, server, userit);
-	// else if (command == "MODE")
-	// 	cmd_MODE(client, server, userit);
 	// else if (command == "QUIT")
 	// 	cmd_QUIT(client, server, userit);
 	// else if (command == "AWAY")
