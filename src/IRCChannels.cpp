@@ -16,7 +16,8 @@ IRCChannel::IRCChannel(const std::string &channelName, std::vector<IRCUser>::ite
 	:name(channelName),
 	isTopicSet(false),
 	userLimit(0),
-	isInviteOnly(false)
+	isInviteOnly(false),
+	isSecure(false)
 {
     users.push_back(*creator); // Add the creator as an initial channel member
     admins.push_back(*creator); // Make the creator an admin
@@ -52,6 +53,11 @@ bool IRCChannel::isInviteOnlyChannel() const
 bool IRCChannel::isTopicSetChannel() const
 {
     return isTopicSet;
+}
+
+bool IRCChannel::isSecureChannel() const
+{
+	return isSecure;
 }
 
 // Add a user to the channel
@@ -127,6 +133,12 @@ void IRCChannel::setInviteOnlyChannel(bool isInviteOnly)
 void IRCChannel::setTopicSetChannel(bool isTopicSet)
 {
     this->isTopicSet = isTopicSet;
+}
+
+// Set the channel as secure
+void IRCChannel::setSecureChannel(bool isSecure)
+{
+	this->isSecure = isSecure;
 }
 
 // Add an admin to the channel

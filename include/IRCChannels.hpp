@@ -35,6 +35,7 @@ class IRCChannel
 		int userLimit;
 		bool isInviteOnly;
 		bool isTopicSet;
+		bool isSecure;
 
 	public:
 		IRCChannel(const std::string &channelName, std::vector<IRCUser>::iterator creator);
@@ -45,6 +46,7 @@ class IRCChannel
 		int getUserLimit() const;
 		bool isInviteOnlyChannel() const;
 		bool isTopicSetChannel() const;
+		bool isSecureChannel() const;
 
 		bool addUser(std::vector<IRCUser>::iterator user);
 		bool removeUser(std::vector<IRCUser>::iterator user);
@@ -57,6 +59,7 @@ class IRCChannel
 		void setUserLimit(int limit);
 		void setInviteOnlyChannel(bool isInviteOnly);
 		void setTopicSetChannel(bool isTopicSet);
+		void setSecureChannel(bool isSecure);
 
 		void addAdmin(std::vector<IRCUser>::iterator admin);
 		void removeAdmin(std::vector<IRCUser>::iterator admin);

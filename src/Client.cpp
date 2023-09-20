@@ -83,8 +83,6 @@ void IRCClient::setup_client(IRCServer &server)
 					if (getUsers(i - 1)->getRegistered() == true && getUsers(i - 1)->getAuth() == 69)
 						msg.CmdHandler((*this), server, getUsers(i - 1));
 
-
-
 					// clear message params
 					msg.clearParams();
 

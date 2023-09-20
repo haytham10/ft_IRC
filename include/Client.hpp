@@ -127,7 +127,7 @@ class IRCClient
 			}
 			return NULL;
 		}
-
+		
 		void setup_client(IRCServer &server);
 
 		struct pollfd	getFds() const
