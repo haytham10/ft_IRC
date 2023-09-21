@@ -1,6 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/09/21 20:11:28 by hmokhtar          #+#    #+#             */
+/*   Updated: 2023/09/21 20:11:28 by hmokhtar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../include/IRCServer.hpp"
 #include "../include/Client.hpp"
 #include "../include/IRCChannels.hpp"
+#include "../include/RPL.hpp"
 
 void IRCClient::setup_client(IRCServer &server)
 {
@@ -69,18 +82,15 @@ void IRCClient::setup_client(IRCServer &server)
 					msg.authentication((*this), server, getUsers(i - 1));	
 
 					if (getUsers(i - 1)->getAuth() == 3)
-					{
-						send(getUsers(i - 1)->getSocket(), "You are now authenticated!\n", 27, 0);
-						getUsers(i - 1)->setAuth(69);
-					}
+						getUsers(i - 1)->sendMsg(RPL_WELCOME(getUsers(i - 1)->getNick()));
 					else if (msg.getCommand() != "PASS" && msg.getCommand() != "NICK" && msg.getCommand() != "USER")
 					{
-						if (getUsers(i - 1)->getRegistered() == false)
-							send(fds[i].fd, "Please authenticate first!\n", 27, 0);
+						if (!getUsers(i - 1)->getRegistered())
+							getUsers(i - 1)->sendMsg(ERR_NOTREGISTERED(getUsers(i - 1)->getNick()));
 					}
 
 					// Handle the commands
-					if (getUsers(i - 1)->getRegistered() == true && getUsers(i - 1)->getAuth() == 69)
+					if (getUsers(i - 1)->getRegistered() == true)
 						msg.CmdHandler((*this), server, getUsers(i - 1));
 
 					// clear message params
@@ -99,9 +109,7 @@ void IRCClient::setup_client(IRCServer &server)
                     }
                     numClients--;
                 }
-
             }
         }
     }
 }
-

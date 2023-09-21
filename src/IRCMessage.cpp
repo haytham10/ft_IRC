@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../include/IRCMessage.hpp"
+#include "../include/RPL.hpp"
 #include <iostream>
 
 std::string  focn(const std::string rawMessage)
@@ -71,7 +72,7 @@ void IRCMessage::parseMsg(const std::string rawMessage)
 void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
 {
 	if (command == "PASS")
-		cmd_PASS(client, server, userit);
+		cmd_PASS(server, userit);
 	else if (command == "NICK")
 		cmd_NICK(client, userit);
 	else if (command == "USER")
@@ -92,19 +93,6 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 		cmd_INVITE(client, server, userit);
 	else if (command == "PRIVMSG")
 		cmd_PRIVMSG(client, server, userit);
-	// else if (command == "LIST")
-	// 	cmd_LIST(client, server, userit);
-	// else if (command == "QUIT")
-	// 	cmd_QUIT(client, server, userit);
-	// else if (command == "AWAY")
-	// 	cmd_AWAY(client, server, userit);
-	// else if (command == "PING")
-	// 	cmd_PING(client, server, userit);
-	// else if (command == "PONG")
-	// 	cmd_PONG(client, server, userit);
 	else
-	{
-		std::string msg = "ERROR :Unknown command\r\n";
-		send(userit->getSocket(), msg.c_str(), msg.length(), 0);
-	}
+		userit->sendMsg(ERR_UNKNOWNCOMMAND(userit->getNick(), command));
 }

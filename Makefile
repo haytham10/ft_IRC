@@ -1,8 +1,8 @@
 NAME = ircserv
 
-SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCConnection.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp ./src/IRCCommands.cpp ./src/IRCChannels.cpp
+SRCS = ./src/main.cpp ./src/Client.cpp ./src/IRCServer.cpp ./src/IRCMessage.cpp ./src/IRCCommands.cpp ./src/IRCChannels.cpp
 
-INC = ./include/IRCConnection.hpp ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp ./include/IRCChannels.hpp
+INC = ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp ./include/IRCChannels.hpp ./include/RPL.hpp
 
 OBJS = $(SRCS:.cpp=.o)
 

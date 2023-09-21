@@ -13,18 +13,16 @@
 #include "../include/IRCMessage.hpp"
 #include "../include/IRCChannels.hpp"
 #include "../include/IRCServer.hpp"
+#include "../include/RPL.hpp"
 
-void IRCMessage::cmd_PASS(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+void IRCMessage::cmd_PASS(IRCServer &server, std::vector<IRCUser>::iterator userit)
 {
-	(void)client;
 	if (userit->getAuth() == 0)
 	{
 		if (getCount() != 0 && getParams()[0] == server.getPassword())
-		{
 			userit->setAuth(1);		
-		}
 		else
-			send(userit->getSocket(), "Wrong password!\n", 16, 0);
+			userit->sendMsg(ERR_PASSWDMISMATCH(userit->getNick()));
 	}
 	else
 		send(userit->getSocket(), "You are already authenticated with password!\n", 45, 0);
@@ -39,9 +37,9 @@ void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator user
 		if (getCount() != 0)
 		{
 			if (getParams()[0].find_first_not_of(str) != std::string::npos)
-				send(userit->getSocket(), "Invalid nickname!\n", 18, 0);
+				userit->sendMsg(ERR_ERRONEUSNICKNAME(userit->getNick(), getParams()[0]));
 			else if (client.getUser(getParams()[0]))
-				send(userit->getSocket(), "Nickname already in use!\n", 25, 0);
+				userit->sendMsg(ERR_NICKNAMEINUSE(userit->getNick(), getParams()[0]));
 			else
 			{
 				if (userit->getNick().empty()) // if nick is empty, set it
@@ -54,21 +52,22 @@ void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator user
 				{
 					if (userit->getNickSet())
 					{
+						userit->sendMsg(RPL_NICK(userit->getNick(), getParams()[0]));
 						userit->setNick(getParams()[0]);
 						userit->setNickSet(true);
 					}
 					else
-						send(userit->getSocket(), "You already set a nickname!\n", 28, 0);
+						userit->sendMsg(ERR_NICKNAMESET(userit->getNick()));
 				}
 			}
 		}
 		else
-			send(userit->getSocket(), "No nickname given!\n", 19, 0);
+			userit->sendMsg(ERR_NONICKNAMEGIVEN(userit->getNick()));
 	}
 	else if (userit->getAuth() == 2)
-		send(userit->getSocket(), "You are already authenticated with nickname!\n", 45, 0);
+		userit->sendMsg(ERR_NICKAUTHSET(userit->getNick()));
 	else
-		send(userit->getSocket(), "Please authenticate with password first!\n", 41, 0);
+		userit->sendMsg(ERR_PASSWDFIRST(userit->getNick()));
 }
 
 void IRCMessage::cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator userit)
@@ -77,51 +76,56 @@ void IRCMessage::cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator user
 	{
 		if (getCount() >= 4)
 		{
-			// Check if the user already set a nickname
-			if (!userit->getNickSet())
+			if (userit->getUsername().empty())
 			{
-				send(userit->getSocket(), "Please set a nickname first!\n", 29, 0);
-				return;
+				// Check if the user already set a nickname
+				if (!userit->getNickSet())
+				{
+					userit->sendMsg(ERR_NONICKNAMEGIVEN(userit->getNick()));
+					return;
+				}
+
+				// Extract username from the USER command
+				std::string username = getParams()[0];
+
+				// Make sure getParams()[1] and getParams()[2] have (0, *)
+				if (getParams()[1] != "0" || getParams()[2] != "*")
+				{
+					userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+					return;
+				}
+
+				// Extract the real name, which may contain spaces
+				std::string realname = "";
+				for (size_t i = 3; i < getParams().size(); i++)
+				{
+					realname += getParams()[i];
+					if (i < getParams().size() - 1)
+						realname += " "; // Add space between real name words
+				}
+
+				// Check and truncate the username if necessary
+				if (username.length() > MAX_USERNAME_LENGTH)
+					username = username.substr(0, MAX_USERNAME_LENGTH);
+
+				// Update user information
+				userit->setUsername(username);
+				userit->setRealname(realname);
+				userit->setRegistered(true);
+
+				// Set client authentication level to 3
+				userit->setAuth(3);
 			}
-
-			// Extract username from the USER command
-			std::string username = getParams()[0];
-
-			// Make sure getParams()[1] and getParams()[2] have (0, *)
-			if (getParams()[1] != "0" || getParams()[2] != "*")
-			{
-				send(userit->getSocket(), "Invalid USER command parameters!\n", 33, 0);
-				return;
-			}
-
-			// Extract the real name, which may contain spaces
-			std::string realname = "";
-			for (size_t i = 3; i < getParams().size(); i++)
-			{
-				realname += getParams()[i];
-				if (i < getParams().size() - 1)
-					realname += " "; // Add space between real name words
-			}
-
-			// Check and truncate the username if necessary
-			if (username.length() > MAX_USERNAME_LENGTH)
-				username = username.substr(0, MAX_USERNAME_LENGTH);
-
-			// Update user information
-			userit->setUsername(username);
-			userit->setRealname(realname);
-			userit->setRegistered(true);
-
-			// Set client authentication level to 3
-			userit->setAuth(3);
+			else
+				userit->sendMsg(ERR_ALREADYREGISTERED(userit->getNick()));
 		}
 		else
-			send(userit->getSocket(), "Not enough parameters for USER command!\n", 40, 0);
+			userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
 	}
 	else if (userit->getAuth() == 3)
-		send(userit->getSocket(), "You are already authenticated with username!\n", 45, 0);
+		userit->sendMsg(ERR_ALREADYREGISTERED(userit->getNick()));
 	else
-		send(userit->getSocket(), "Please authenticate with nickname or password first!\n", 53, 0);
+		userit->sendMsg(ERR_PASSWDFIRST(userit->getNick()));
 }
 
 void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)

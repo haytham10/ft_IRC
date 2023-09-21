@@ -37,7 +37,7 @@ class IRCMessage
 		void authentication(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void CmdHandler(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		////////////// AUTH ///////////////
-		void	cmd_PASS(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+		void	cmd_PASS(IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator userit);
 		void	cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator userit);
 		///////////////////////////////////
