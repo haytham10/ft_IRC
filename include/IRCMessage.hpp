@@ -40,8 +40,6 @@ class IRCMessage
 		void	cmd_PASS(IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator userit);
 		void	cmd_USER(IRCClient &client, std::vector<IRCUser>::iterator userit);
-		///////////////////////////////////
-
 		////////////// CMD ////////////////
 		void	cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_KICK(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);

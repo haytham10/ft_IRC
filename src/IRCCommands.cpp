@@ -30,7 +30,7 @@ void IRCMessage::cmd_PASS(IRCServer &server, std::vector<IRCUser>::iterator user
 
 void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator userit)
 {
-	if (userit->getAuth() == 1)
+	if (userit->getAuth() >= 1)
 	{
 		std::string str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 		
@@ -491,10 +491,15 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
             }
             else
             {
-                // No new topic provided, send the current topic as an RPL_TOPIC numeric reply
-                std::string currentTopic = channel->getTopic();
-                std::string topicMsg = userit->getNick() + " " + channelName + " :" + currentTopic + "\r\n";
-                send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+				if (channel->getTopic() == "")
+					userit->sendMsg(RPL_NOTOPIC(userit->getNick(), channelName));
+				else
+				{
+					// No new topic provided, send the current topic as an RPL_TOPIC numeric reply
+					std::string currentTopic = channel->getTopic();
+					std::string topicMsg = userit->getNick() + " " + channelName + " :" + currentTopic + "\r\n";
+					send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+				}
             }
         }
         else

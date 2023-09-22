@@ -41,13 +41,12 @@ void IRCClient::setup_client(IRCServer &server)
             if (numClients < MAX_CLIENTS)
             {
                 // Accept a new client connection
+			    IRCUser user;
                 struct sockaddr_in clientAddress;
+				
                 socklen_t clientAddressLength = sizeof(clientAddress);
                 int clientSocket = accept(server.getSock(), (struct sockaddr *)&clientAddress, &clientAddressLength);
-			    IRCUser user;
                 user.setSocket(clientSocket);
-
-                //std::cout << "New connection from socket fd" << user.getSocket() << std::endl;
                 fillUsers(user);
                 if (clientSocket != -1)
                 {
@@ -78,20 +77,20 @@ void IRCClient::setup_client(IRCServer &server)
 					// clear buffer
 					memset(buffer, 0, sizeof(buffer));
 
+					std::vector<IRCUser>::iterator userit = getUsers(i - 1);
+					
                     // Implement user athentication here...
-					msg.authentication((*this), server, getUsers(i - 1));	
+					msg.authentication((*this), server, userit);	
 
-					if (getUsers(i - 1)->getAuth() == 3)
-						getUsers(i - 1)->sendMsg(RPL_WELCOME(getUsers(i - 1)->getNick()));
-					else if (msg.getCommand() != "PASS" && msg.getCommand() != "NICK" && msg.getCommand() != "USER")
+					if (userit->getAuth() == 3)
 					{
-						if (!getUsers(i - 1)->getRegistered())
-							getUsers(i - 1)->sendMsg(ERR_NOTREGISTERED(getUsers(i - 1)->getNick()));
+						userit->setAuth(69);
+						userit->sendMsg(RPL_WELCOME(userit->getNick()));
 					}
 
 					// Handle the commands
 					if (getUsers(i - 1)->getRegistered() == true)
-						msg.CmdHandler((*this), server, getUsers(i - 1));
+						msg.CmdHandler((*this), server, userit);
 
 					// clear message params
 					msg.clearParams();

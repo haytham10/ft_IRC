@@ -77,6 +77,8 @@ void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vecto
 		cmd_NICK(client, userit);
 	else if (command == "USER")
 		cmd_USER(client, userit);
+	else if (userit->getRegistered() == false)
+		userit->sendMsg(ERR_NOTREGISTERED(userit->getNick()));
 }
 
 void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
@@ -93,6 +95,8 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 		cmd_INVITE(client, server, userit);
 	else if (command == "PRIVMSG")
 		cmd_PRIVMSG(client, server, userit);
+	else if (command == "PASS" || command == "NICK" || command == "USER")
+		return ;
 	else
 		userit->sendMsg(ERR_UNKNOWNCOMMAND(userit->getNick(), command));
 }
