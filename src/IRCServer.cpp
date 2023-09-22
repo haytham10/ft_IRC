@@ -66,3 +66,4 @@ IRCChannel* IRCServer::getChannel(const std::string& name)
 	}
 	return NULL;
 }
+

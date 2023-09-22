@@ -25,7 +25,7 @@ void IRCMessage::cmd_PASS(IRCServer &server, std::vector<IRCUser>::iterator user
 			userit->sendMsg(ERR_PASSWDMISMATCH(userit->getNick()));
 	}
 	else
-		send(userit->getSocket(), "You are already authenticated with password!\n", 45, 0);
+		userit->sendMsg(ERR_PASSWDSET(userit->getNick()));
 }
 
 void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator userit)
@@ -133,8 +133,7 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
     // Check if the JOIN command has the required parameters
     if (getCount() < 1)
     {
-        std::string errorMsg = "ERROR :Not enough parameters for JOIN command\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+		userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
         return;
     }
 
@@ -155,8 +154,7 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
         std::string channelName;
 		if (channelParam[0] != '#')
 		{
-			std::string errorMsg = "ERROR :Invalid channel name: " + channelParam + "\r\n";
-			send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+			userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelParam));
 			return;
 		}
 		else
@@ -170,8 +168,8 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
             // Check if the user is already in the channel
             if (channel->isUserInChannel(userit))
             {
-                std::string errorMsg = "ERROR :You are already in channel " + channelName + "\r\n";
-                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+				userit->sendMsg(ERR_ALREADYJOINED(userit->getNick(), channelName));
+				return;
             }
             else
             {
@@ -185,33 +183,20 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
 							if (channel->addUser(userit))
 							{
 								// Send JOIN message to the user
-								std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
-								send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
+								userit->sendMsg(RPL_JOIN(userit->getNick(), channelName));
 
 								//  Send channel topic if set
                         		 if (channel->getTopic() != "")
-                       			 {
-                      			     std::string topicMsg = userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
-                        		     send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
-                        		 }
+									userit->sendMsg(RPL_TOPIC(userit->getNick(), channelName, channel->getTopic()));
 							}
 							else
-							{
-								std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
-								send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-							}
+								userit->sendMsg(ERR_CANTJOINCHANNEL(userit->getNick(), channelName));
 						}
 						else
-						{
-							std::string errorMsg = "ERROR :Wrong key for channel " + channelName + "\r\n";
-							send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-						}
+							userit->sendMsg(ERR_BADCHANNELKEY(userit->getNick(), channelName));
 					}
 					else
-					{
-						std::string errorMsg = "ERROR :Channel " + channelName + " is password protected\r\n";
-						send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-					}
+						userit->sendMsg(ERR_BADCHANNELKEY(userit->getNick(), channelName));
 				}
 				else
 				{
@@ -219,21 +204,14 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
 					if (channel->addUser(userit))
 					{
 						// Send JOIN message to the user
-						std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
-						send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
+						userit->sendMsg(RPL_JOIN(userit->getNick(), channelName));
 
 						// Send channel topic if set
                        	if (channel->getTopic() != "")
-                      	{
-                      	    std::string topicMsg = userit->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
-                            send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
-                        }
+							userit->sendMsg(RPL_TOPIC(userit->getNick(), channelName, channel->getTopic()));
 					}
 					else
-					{
-						std::string errorMsg = "ERROR :Failed to join channel " + channelName + "\r\n";
-						send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-					}
+						userit->sendMsg(ERR_CANTJOINCHANNEL(userit->getNick(), channelName));
 				}
             }
         }
@@ -242,114 +220,127 @@ void IRCMessage::cmd_JOIN(IRCClient &client, IRCServer &server, std::vector<IRCU
             // Channel doesn't exist, create it
             IRCChannel newChannel(channelName, userit);
             server.addChannel(newChannel);
+			newChannel.setTime();
 
             // Send JOIN message to the user
-            std::string joinMsg = ":" + userit->getNick() + " JOIN " + channelName + "\r\n";
-            send(userit->getSocket(), joinMsg.c_str(), joinMsg.length(), 0);
+			userit->sendMsg(RPL_JOIN(userit->getNick(), channelName));
         }
     }
 }
 
 void IRCMessage::cmd_KICK(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
 {
-    try
+    // Check if the KICK command has the required parameters
+    if (getCount() < 3)
+    {
+        userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+        return;
+    }
+
+    // Parse the channels from the KICK command parameters
+    std::vector<std::string> kickParams = splitString(getParams()[0], ',');
+    std::vector<std::string> users;
+	std::string reason = getKickReason();
+
+	
+
+    if (getCount() > 1)
+    {
+        // Parse users if provided
+        users = splitString(getParams()[1], ',');
+    }
+
+    for (const std::string& channelParam : kickParams)
 	{
-        // Check if the KICK command has the required parameters
-        if (getCount() < 2)
-            throw std::runtime_error("Not enough parameters for KICK command");
+        // Check if the channel names start with '#', and add return error if not available
+        std::string channelName;
+        if (channelParam[0] != '#')
+        {
+            userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelParam));
+            return;
+        }
+        else
+            channelName = channelParam;
 
-        // Parse the channels from the KICK command parameters
-        std::vector<std::string> kickParams = splitString(getParams()[0], ',');
-        std::vector<std::string> users;
+        // Get the channel from the server
+        IRCChannel* channel = server.getChannel(channelName);
 
-        if (getCount() > 1)
+        if (!channel)
 		{
-            // Parse users if provided
-            users = splitString(getParams()[1], ',');
+            userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelName));
+            return;
         }
 
-        for (const std::string& channelParam : kickParams) {
-            // Check if the channel names start with '#', and add return error if not available
-            std::string channelName;
-			if (channelParam[0] != '#')
-				throw std::runtime_error("Invalid channel name: " + channelParam);
-			else
-				channelName = channelParam;
+        // Check if the user is in the channel
+        if (!channel->isUserInChannel(userit))
+		{
+            userit->sendMsg(ERR_NOTONCHANNEL(userit->getNick(), channelName));
+            return;
+        }
 
-            // Get the channel from the server
-            IRCChannel* channel = server.getChannel(channelName);
+        // Check if the user is an admin in the channel
+        if (!channel->isAdmin(userit))
+		{
+            userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
+            return;
+        }
 
-            if (!channel) {
-                throw std::runtime_error("Channel doesn't exist");
+        // Iterate through the users and kick each one
+        for (const std::string& userName : users)
+        {
+            // Get the user from the server
+            IRCUser* user = client.getUser(userName);
+
+            if (!user)
+            {
+                userit->sendMsg(ERR_NOSUCHNICK(userit->getNick(), userName));
+                continue;  // Continue to the next user
             }
 
             // Check if the user is in the channel
-            if (!channel->isUserInChannel(userit)) {
-                throw std::runtime_error("You are not in the channel");
+            if (!channel->isUserAvailable(user))
+            {
+                userit->sendMsg(ERR_USERNOTINCHANNEL(userit->getNick(), userName, channelName));
+                continue;  // Continue to the next user
             }
 
-            // Check if the user is an admin in the channel
-            if (!channel->isAdmin(userit)) {
-                throw std::runtime_error("You are not an admin in the channel");
+            // Remove the user from the channel
+            if (channel->kickUser(user))
+            {
+                channel->removeAdmin(static_cast<std::vector<IRCUser>::iterator>(user));
+                // Send KICK message to the user
+				user->sendMsg(RPL_KICK(userit->getNick(), channelName, userName, reason));
             }
-
-            // Iterate through the users and kick each one
-            for (const std::string& userName : users)
-			{
-                // Get the user from the server
-                IRCUser* user = client.getUser(userName);
-
-                if (!user)
-                    throw std::runtime_error("User doesn't exist: " + userName);
-
-                // Check if the user is in the channel
-                if (!channel->isUserAvailable(user))
-                    throw std::runtime_error("User is not in the channel: " + userName);
-
-                // Remove the user from the channel
-                if (channel->kickUser(user))
-				{
-					channel->removeAdmin(static_cast<std::vector<IRCUser>::iterator>(user));
-                    // Send KICK message to the user
-                    std::string kickMsg = ":" + userit->getNick() + " KICK " + channelName + " " + user->getNick() + "\r\n";
-                    send(user->getSocket(), kickMsg.c_str(), kickMsg.length(), 0);
-                }
-				else
-                    throw std::runtime_error("Failed to kick user " + user->getNick() + " from channel " + channelName);
-            }
+            else
+				userit->sendMsg(ERR_USERNOTINCHANNEL(userit->getNick(), userName, channelName));
         }
-    }
-	catch (const std::exception& e)
-	{
-        std::string errorMsg = "ERROR :" + std::string(e.what()) + "\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
     }
 }
 
-void IRCMessage::cmd_MODE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+void IRCMessage::cmd_MODE(IRCClient& client, IRCServer& server, std::vector<IRCUser>::iterator userit)
 {
-	try
+    // Check if the MODE command has the required parameters
+    if (getCount() < 1)
+    {
+        userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+        return;
+    }
+
+    // Parse the channels from the MODE command parameters
+    std::vector<std::string> modeParams = splitString(getParams()[0], ',');
+    std::vector<std::string> modes;
+
+	if (getCount() == 1)
 	{
-		// Check if the MODE command has the required parameters
-		if (getCount() < 1)
-			throw std::runtime_error("Not enough parameters for MODE command");
-
-		// Parse the channels from the MODE command parameters
-		std::vector<std::string> modeParams = splitString(getParams()[0], ',');
-		std::vector<std::string> modes;
-
-		if (getCount() > 1)
-		{
-			// Parse modes if provided
-			modes = splitString(getParams()[1], ',');
-		}
-
 		for (const std::string& channelParam : modeParams)
 		{
 			// Check if the channel names start with '#', and add return error if not available
 			std::string channelName;
 			if (channelParam[0] != '#')
-				throw std::runtime_error("Invalid channel name: " + channelParam);
+			{
+				userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelParam));
+				return;
+			}
 			else
 				channelName = channelParam;
 
@@ -357,92 +348,164 @@ void IRCMessage::cmd_MODE(IRCClient &client, IRCServer &server, std::vector<IRCU
 			IRCChannel* channel = server.getChannel(channelName);
 
 			if (!channel)
-				throw std::runtime_error("Channel doesn't exist");
+			{
+				userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelName));
+				return;
+			}
 
 			// Check if the user is in the channel
 			if (!channel->isUserInChannel(userit))
-				throw std::runtime_error("You are not in the channel");
+			{
+				userit->sendMsg(ERR_NOTONCHANNEL(userit->getNick(), channelName));
+				return;
+			}
 
 			// Check if the user is an admin in the channel
 			if (!channel->isAdmin(userit))
-				throw std::runtime_error("You are not an admin in the channel");
-
-			// Iterate through the modes and set each one
-			for (const std::string& mode : modes)
 			{
-				if (mode == "+i")
-					channel->setInviteOnlyChannel(true);
-				else if (mode == "-i")
-					channel->setInviteOnlyChannel(false);
-				else if (mode == "+t")
-					channel->setTopicSetChannel(true);
-				else if (mode == "-t")
-					channel->setTopicSetChannel(false);
-				else if (mode == "+l")
-				{
-					if (getCount() < 3)
-						throw std::runtime_error("Not enough parameters for MODE command");
-					else
-					{
-						int limit = std::stoi(getParams()[2]);
-						channel->setUserLimit(limit);
-					}
-				}
-				else if (mode == "-l")
-					channel->setUserLimit(0);
-				else if (mode == "+k")
-				{
-					if (getCount() < 3)
-						throw std::runtime_error("Not enough parameters for MODE command");
-					else
-					{
-						channel->setSecureChannel(true);
-						channel->setKey(getParams()[2]);
-					}
-				}
-				else if (mode == "-k")
-					channel->setSecureChannel(false);
-				else if (mode == "+o")
-				{
-					if (getCount() < 3)
-						throw std::runtime_error("Not enough parameters for MODE command");
-					else
-					{
-						IRCUser *user = client.getUser(getParams()[2]);
-
-						if (!user)
-							throw std::runtime_error("User doesn't exist: " + getParams()[2]);
-						else if (channel->isAdmin(static_cast<std::vector<IRCUser>::iterator>(user)) == 1)
-							throw std::runtime_error("User is already an Operator: " + getParams()[2]);
-						else
-							channel->addAdmin(static_cast<std::vector<IRCUser>::iterator>(user));
-					}
-				}
-				else if (mode == "-o")
-				{
-					if (getCount() < 3)
-						throw std::runtime_error("Not enough parameters for MODE command");
-					else
-					{
-						IRCUser *user = client.getUser(getParams()[2]);
-						if (!user)
-							throw std::runtime_error("User doesn't exist: " + getParams()[2]);
-						else if (channel->isAdmin(static_cast<std::vector<IRCUser>::iterator>(user)) == 0)
-							throw std::runtime_error("User is not an Operarot: " + getParams()[2]);
-						else
-							channel->removeAdmin(static_cast<std::vector<IRCUser>::iterator>(user));
-					}
-				}
-				else
-					throw std::runtime_error("Invalid mode: " + mode);
+				userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
+				return;
 			}
+
+			// Send RPL_CHANNELMODEIS numeric reply to the user
+			std::string modeMsg = RPL_CHANNELMODEIS(userit->getNick(), channelName, channel->getMode());
+			userit->sendMsg(modeMsg);
+			unsigned long time = channel->getTime();
+			userit->sendMsg(RPL_CREATIONTIME(userit->getNick(), channelName, std::to_string(time)));
 		}
+		return;
 	}
-	catch (const std::exception& e)
-	{
-		std::string errorMsg = "ERROR :" + std::string(e.what()) + "\r\n";
-		send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-	}
+
+    if (getCount() > 1)
+    {
+        // Parse modes if provided
+        modes = splitString(getParams()[1], ',');
+    }
+
+    for (const std::string& channelParam : modeParams)
+    {
+        // Check if the channel names start with '#', and add return error if not available
+        std::string channelName;
+        if (channelParam[0] != '#')
+        {
+            userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelParam));
+            return;
+        }
+        else
+            channelName = channelParam;
+
+        // Get the channel from the server
+        IRCChannel* channel = server.getChannel(channelName);
+
+        if (!channel)
+        {
+            userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelName));
+            return;
+        }
+
+        // Check if the user is in the channel
+        if (!channel->isUserInChannel(userit))
+        {
+            userit->sendMsg(ERR_NOTONCHANNEL(userit->getNick(), channelName));
+            return;
+        }
+
+        // Check if the user is an admin in the channel
+        if (!channel->isAdmin(userit))
+        {
+            userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
+            return;
+        }
+
+        // Iterate through the modes and set each one
+        for (const std::string& mode : modes)
+        {
+            if (mode == "+i")
+                channel->setInviteOnlyChannel(true);
+            else if (mode == "-i")
+                channel->setInviteOnlyChannel(false);
+            else if (mode == "+t")
+                channel->setTopicSetChannel(true);
+            else if (mode == "-t")
+                channel->setTopicSetChannel(false);
+            else if (mode == "+l")
+            {
+                if (getCount() < 3)
+                {
+                    userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+                    return;
+                }
+                else
+                {
+                    int limit = std::stoi(getParams()[2]);
+                    channel->setUserLimit(limit);
+                }
+            }
+            else if (mode == "-l")
+                channel->setUserLimit(0);
+            else if (mode == "+k" || mode == "-k")
+            {
+                if (getCount() < 3)
+                {
+                    userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+                    return;
+                }
+                else
+                {
+                    if (mode == "+k")
+                    {
+                        channel->setSecureChannel(true);
+                        channel->setKey(getParams()[2]);
+                    }
+                    else
+                    {
+                        channel->setSecureChannel(false);
+                        channel->setKey("");
+                    }
+                }
+            }
+            else if (mode == "+o" || mode == "-o")
+            {
+                if (getCount() < 3)
+                {
+                    userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+                    return;
+                }
+                else
+                {
+                    IRCUser* targetUser = client.getUser(getParams()[2]);
+
+                    if (!targetUser)
+                    {
+                        userit->sendMsg(ERR_NOSUCHNICK(userit->getNick(), getParams()[2]));
+                        continue;  // Continue to the next mode
+                    }
+
+					if (channel->isUserAvailable(targetUser))
+					{
+						if (mode == "+o")
+						{
+							if (!channel->isAdmin(static_cast<std::vector<IRCUser>::iterator>(targetUser)))
+								channel->addAdmin(static_cast<std::vector<IRCUser>::iterator>(targetUser));
+							else
+								userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
+						}
+						else if (mode == "-o")
+						{
+							if (channel->isAdmin(static_cast<std::vector<IRCUser>::iterator>(targetUser)))
+								channel->removeAdmin(static_cast<std::vector<IRCUser>::iterator>(targetUser));
+							else
+								userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
+						}
+					}
+					else
+						userit->sendMsg(ERR_USERNOTINCHANNEL(userit->getNick(), getParams()[2], channelName));
+                }
+            }
+            else
+                userit->sendMsg(ERR_UMODEUNKNOWNFLAG(userit->getNick()));
+        }
+    }
 }
 
 void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
@@ -450,8 +513,7 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
     // Check if the TOPIC command has the required parameters
     if (getCount() < 1)
     {
-        std::string errorMsg = "ERROR :Not enough parameters for TOPIC command\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+		userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
         return;
     }
 
@@ -477,17 +539,14 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
 
                     // Set the new topic for the channel
                     channel->setTopic(newTopic);
-
+					channel->setTopicSetter(userit->getNick());
                     // Send RPL_TOPIC numeric reply to the user
-                    std::string topicMsg = userit->getNick() + " " + channelName + " :" + newTopic + "\r\n";
-                    send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+					std::string topicMsg = RPL_TOPIC(userit->getNick(), channelName, newTopic);
+					channel->brodcastMsg(topicMsg, userit);
+					userit->sendMsg(topicMsg);
                 }
                 else
-                {
-                    // User doesn't have privileges to change the topic
-                    std::string errorMsg = "ERROR :You do not have the necessary privileges to change the topic in channel " + channelName + "\r\n";
-                    send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-                }
+					userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
             }
             else
             {
@@ -495,26 +554,17 @@ void IRCMessage::cmd_TOPIC(IRCClient &client, IRCServer &server, std::vector<IRC
 					userit->sendMsg(RPL_NOTOPIC(userit->getNick(), channelName));
 				else
 				{
-					// No new topic provided, send the current topic as an RPL_TOPIC numeric reply
-					std::string currentTopic = channel->getTopic();
-					std::string topicMsg = userit->getNick() + " " + channelName + " :" + currentTopic + "\r\n";
-					send(userit->getSocket(), topicMsg.c_str(), topicMsg.length(), 0);
+					std::time_t topicTime = std::time(NULL);
+					userit->sendMsg(RPL_TOPIC(userit->getNick(), channelName, channel->getTopic()));
+					userit->sendMsg(RPL_TOPICWHOTIME(userit->getNick(), channelName ,channel->getTopicSetter(), std::to_string(topicTime)));
 				}
             }
         }
         else
-        {
-            // User is not in the channel, send ERR_NOTONCHANNEL numeric reply
-            std::string errorMsg = "ERROR :You are not on channel " + channelName + "\r\n";
-            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-        }
+			userit->sendMsg(ERR_NOTONCHANNEL(userit->getNick(), channelName));
     }
     else
-    {
-        // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
-        std::string errorMsg = "ERROR :No such channel " + channelName + "\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-    }
+		userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelName));
 }
 
 void IRCMessage::cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
@@ -522,8 +572,7 @@ void IRCMessage::cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IR
     // Check if the INVITE command has the required parameters
     if (getCount() < 2)
     {
-        std::string errorMsg = "ERROR :Not enough parameters for INVITE command\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+		userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
         return;
     }
 
@@ -545,44 +594,35 @@ void IRCMessage::cmd_INVITE(IRCClient &client, IRCServer &server, std::vector<IR
             if (userToInvite)
             {
                 // Check if the user is already in the channel
-                if (channel->isUserInChannel(static_cast<std::vector<IRCUser>::iterator>(userToInvite)))
+                if (channel->isUserAvailable(userToInvite))
+					userit->sendMsg(ERR_USERONCHANNEL(userit->getNick(), userName, channelName));
+				else if (channel->isUserInvited(userName))
+					userit->sendMsg(ERR_USERONCHANNEL(userit->getNick(), userName, channelName));
+                else if (channel->inviteUser(userName))
                 {
-                    std::string errorMsg = "ERROR :User " + userName + " is already in channel " + channelName + "\r\n";
-                    send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
-                }
-                else
-                {
-                    // Add the user to the invited list of the channel
-                    channel->inviteUser(userName);
-
                     // Send RPL_INVITING numeric reply to the user who sent the invite
-                    std::string invitingMsg = userit->getNick() + " " + userName + " " + channelName + "\r\n";
-                    send(userit->getSocket(), invitingMsg.c_str(), invitingMsg.length(), 0);
+					userit->sendMsg(RPL_INVITING(userit->getNick(), userName, channelName));
 
                     // Send INVITE message to the invited user
-                    std::string inviteMsg = ":" + userit->getNick() + " INVITE " + userName + " " + channelName + "\r\n";
-                    send(userToInvite->getSocket(), inviteMsg.c_str(), inviteMsg.length(), 0);
+					userToInvite->sendMsg(RPL_INVITE(userit->getNick(), userName, channelName));
                 }
             }
             else
             {
                 // User to invite does not exist, send ERR_NOSUCHNICK numeric reply
-                std::string errorMsg = "ERROR :No such user " + userName + "\r\n";
-                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+				userit->sendMsg(ERR_NOSUCHNICK(userit->getNick(), userName));
             }
         }
         else
         {
             // User does not have necessary privileges to invite, send ERR_CHANOPRIVSNEEDED numeric reply
-            std::string errorMsg = "ERROR :You do not have the necessary privileges to invite to channel " + channelName + "\r\n";
-            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+			userit->sendMsg(ERR_CHANOPRIVSNEEDED(userit->getNick(), channelName));
         }
     }
     else
     {
         // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
-        std::string errorMsg = "ERROR :No such channel " + channelName + "\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+		userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), channelName));
     }
 }
 
@@ -591,14 +631,16 @@ void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<I
     // Check if the PRIVMSG command has the required parameters
     if (getCount() < 2)
     {
-        std::string errorMsg = "ERROR :Not enough parameters for PRIVMSG command\r\n";
-        send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+		userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
         return;
     }
 
     // Get the target and message from the command parameters
     std::string target = getParams()[0];
     std::string message = getMessageText();
+
+	if (message.empty())
+		userit->sendMsg(ERR_NOTEXTTOSEND(userit->getNick()));
 
     // Check if the target is a user or a channel
     if (target[0] == '#')
@@ -612,21 +654,19 @@ void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<I
             if (channel->isUserInChannel(userit))
             {
                 // Send the message to all users in the channel
-                std::string msgToSend = ":" + userit->getNick() + " PRIVMSG " + target + " :" + message + "\r\n";
+                std::string msgToSend = RPL_PRIVMSG(userit->getNick(), userit->getUsername(), target, message);
                 channel->brodcastMsg(msgToSend, userit);
             }
             else
             {
                 // User is not in the channel, send ERR_NOTONCHANNEL numeric reply
-                std::string errorMsg = "ERROR :You are not on channel " + target + "\r\n";
-                send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+				userit->sendMsg(ERR_NOTONCHANNEL(userit->getNick(), target));
             }
         }
         else
         {
             // Channel doesn't exist, send ERR_NOSUCHCHANNEL numeric reply
-            std::string errorMsg = "ERROR :No such channel " + target + "\r\n";
-            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+			userit->sendMsg(ERR_NOSUCHCHANNEL(userit->getNick(), target));
         }
     }
     else
@@ -637,14 +677,12 @@ void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<I
         if (targetUser)
         {
             // Send the private message to the target user
-            std::string msgToSend = ":" + userit->getNick() + " PRIVMSG " + target + " :" + message + "\r\n";
-            send(targetUser->getSocket(), msgToSend.c_str(), msgToSend.length(), 0);
+			targetUser->sendMsg(RPL_PRIVMSG(userit->getNick(), userit->getUsername(), target, message));
         }
         else
         {
             // Target user doesn't exist, send ERR_NOSUCHNICK numeric reply
-            std::string errorMsg = "ERROR :No such user " + target + "\r\n";
-            send(userit->getSocket(), errorMsg.c_str(), errorMsg.length(), 0);
+			userit->sendMsg(ERR_NORECIPIENT(userit->getNick()));
         }
     }
 }

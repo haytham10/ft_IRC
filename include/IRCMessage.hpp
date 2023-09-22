@@ -91,6 +91,18 @@ class IRCMessage
 			}
 			return msg;
 		}
+
+		std::string getKickReason() const
+		{
+			std::string msg;
+			for (int i = 2; i < count; i++)
+			{
+				msg += params[i];
+				if (i != count - 1)
+					msg += " ";
+			}
+			return msg;
+		}
 };
 
 #endif

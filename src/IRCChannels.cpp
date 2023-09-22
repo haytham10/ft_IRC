@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../include/IRCChannels.hpp"
+#include "../include/RPL.hpp"
 
 IRCChannel::IRCChannel(const std::string &channelName, std::vector<IRCUser>::iterator creator)
 	:name(channelName),
@@ -65,13 +66,17 @@ bool IRCChannel::addUser(std::vector<IRCUser>::iterator user)
 {
     // Check user limit if set
     if (userLimit > 0 && users.size() >= static_cast<size_t>(userLimit))
-    {
+	{
+		user->sendMsg(ERR_CHANNELISFULL(user->getNick(), name));
         return false; // Channel is full
-    }
+	}
 
 	    // Check if the channel is invite-only and the user is invited
     if (isInviteOnly && !isUserInvited(user->getNick()))
+	{
+		user->sendMsg(ERR_INVITEONLYCHAN(user->getNick(), name));
         return false; // User is not invited
+	}
 
     // Check if user is already in the channel
     if (!isUserInChannel(user) )
@@ -79,7 +84,6 @@ bool IRCChannel::addUser(std::vector<IRCUser>::iterator user)
         users.push_back(*user);
         return true; // User added successfully
     }
-
     return false; // User is already in the channel
 }
 
@@ -227,4 +231,41 @@ void IRCChannel::brodcastMsg(const std::string &msg, std::vector<IRCUser>::itera
 		if (it->getNick() != sender->getNick())
 			it->sendMsg(msg);
 	}
+}
+
+const std::string IRCChannel::getMode() const
+{
+	std::string mode = "+";
+	
+	if (isSecure)
+		mode += "s";
+	if (isInviteOnly)
+		mode += "i";
+	if (isTopicSet)
+		mode += "t";
+	if (userLimit > 0)
+		mode += "l";
+	if (key != "")
+		mode += "k";
+	return mode;
+}
+
+void IRCChannel::setTime()
+{
+	createTime = time(0);
+}
+
+time_t IRCChannel::getTime() const
+{
+	return createTime;
+}
+
+void IRCChannel::setTopicSetter(const std::string &setter)
+{
+	topicSetter = setter;
+}
+
+const std::string& IRCChannel::getTopicSetter() const
+{
+	return topicSetter;
 }

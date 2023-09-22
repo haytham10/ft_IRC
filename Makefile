@@ -8,7 +8,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 CC = g++
 
-CFLAGS = 
+CFLAGS =
 
 all: $(NAME)
 

@@ -9,6 +9,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <signal.h>
+#include <ctime>
 #include "../include/IRCChannels.hpp"
 #include <fcntl.h> // Include the fcntl header
 

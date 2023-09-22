@@ -33,6 +33,8 @@ class IRCChannel
 		std::vector<IRCUser> users; // Store pointers to std::vector<IRCUser>::iterator objects
 		std::vector<IRCUser> admins; // Store pointers to admin users
 		std::vector<std::string> invited; // store invited users through invite
+		std::time_t	createTime;
+		std::string topicSetter;
 		int userLimit;
 		bool isInviteOnly;
 		bool isTopicSet;
@@ -44,6 +46,8 @@ class IRCChannel
 		const std::string& getName() const;
 		const std::string& getTopic() const;
 		const std::string& getKey() const;
+		const std::string getMode() const;
+		const std::string& getTopicSetter() const;
 		int getUserLimit() const;
 		bool isInviteOnlyChannel() const;
 		bool isTopicSetChannel() const;
@@ -56,6 +60,7 @@ class IRCChannel
 		bool kickUser(IRCUser *user);
 
 		void setTopic(const std::string &newTopic);
+		void setTopicSetter(const std::string &setter);
 		void setKey(const std::string &newKey);
 		void setUserLimit(int limit);
 		void setInviteOnlyChannel(bool isInviteOnly);
@@ -71,6 +76,9 @@ class IRCChannel
 		bool isUserInvited(const std::string& userName) const;
 
 		void brodcastMsg(const std::string &msg, std::vector<IRCUser>::iterator sender);
+
+		void setTime();
+		time_t getTime() const;
 
 		std::vector<std::string> splitString(const std::string& input, char delimiter);
 };
