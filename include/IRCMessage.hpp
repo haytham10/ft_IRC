@@ -102,7 +102,7 @@ class IRCMessage
 					msg += " ";
 			}
 			return msg;
-		}
+		}		
 };
 
 #endif
