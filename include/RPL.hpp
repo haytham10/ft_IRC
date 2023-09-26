@@ -57,7 +57,7 @@
 # define ERR_NONICKNAMEGIVEN(client) (":irc.1337.ma 431 " + client + " :There is no nickname.\r\n")
 # define ERR_ERRONEUSNICKNAME(client, nickname) (":irc.1337.ma 432 " + client + " " + nickname + " :Erroneus nickname\r\n")
 # define ERR_NICKNAMEINUSE(client, nickname) (":irc.1337.ma 433 " + client + " " + nickname + " :Nickname is already in use.\r\n")
-# define RPL_NICK(oclient, uclient) (":" + oclient + "!" + uclient + "@irc.1337.ma NICK " + "\r\n")
+# define RPL_NICK(oclient, uclient) (":" + oclient + " NICK " + uclient + "\r\n")
 # define ERR_NICKNAMESET(client) (":irc.1337.ma " + client + " :You already set a nickname!" + "\r\n")
 # define ERR_NICKAUTHSET(client) (":irc.1337.ma " + client + " :You are already authenticated with nickname!" + "\r\n")
 # define ERR_PASSWDFIRST(client) (":irc.1337.ma " + client + " :Please authenticate with password/nickname first!" + "\r\n")
@@ -83,5 +83,11 @@
 
 // QUIT
 # define RPL_QUIT(nickname, username, message) (":" + nickname + "!" + username + "@irc.1337.ma" + " QUIT :" + message + "\r\n")
+
+// BOT
+# define RPL_TIME(client, time) (":irc.1337.ma 391 " + client + " " + time + "\r\n")
+# define RPL_VERSION(client, version, os) (":irc.1337.ma 351 " + client + " " + version + " " + os + "\r\n")
+# define RPL_INFO(client, info) (":irc.1337.ma 371 " + client + " " + info + "\r\n")
+# define RPL_ENDOFINFO(client) (":irc.1337.ma 374 " + client + " :End of INFO list\r\n")
 
 #endif

@@ -44,6 +44,7 @@ void IRCMessage::cmd_NICK(IRCClient &client, std::vector<IRCUser>::iterator user
 			{
 				if (userit->getNick().empty()) // if nick is empty, set it
 				{
+					userit->sendMsg(RPL_NICK(userit->getNick(), getParams()[0]));
 					userit->setNick(getParams()[0]);
 					userit->setNickSet(true); // set nick to true, so that we can't change it again
 					userit->setAuth(2);
@@ -710,4 +711,61 @@ void IRCMessage::cmd_PONG(IRCClient &client, IRCServer &server, std::vector<IRCU
 	(void)server;
 	(void)userit;
 	return ;
+}
+
+void IRCMessage::cmd_BOT(std::vector<IRCUser>::iterator userit)
+{
+	// create a commmand response for BOT time to return current time and date,
+	if (getCount() < 1)
+	{
+		userit->sendMsg(ERR_NEEDMOREPARAMS(userit->getNick(), command));
+		return;
+	}
+
+	std::string command = getParams()[0];
+	if (command == "time")
+	{
+		std::time_t t = std::time(NULL);
+		std::string time = std::ctime(&t);
+		userit->sendMsg(RPL_TIME(userit->getNick(), time));
+	}
+	else if (command == "version")
+		userit->sendMsg(RPL_VERSION(userit->getNick(), "1.0.0", "UNIX"));
+	else if (command == "info")
+	{
+		std::string info = R"(
+			Welcome to Our IRC Server!
+
+			Server Information:
+			- Server Name: ZAZA Server
+			- Version: 1.0
+			- Host: irc.1337.ma
+
+			Made By:
+			- Haytham Mokhtari (hmokhtar)
+			- Hamza El Haddari (hel-hadd)
+			- Amal Senhaji (amsenhaj)
+
+			Supported Commands:
+			- JOIN: Join a channel.
+			- PART: Leave a channel.
+			- PRIVMSG: Send private messages.
+			- MODE: Change channel modes.
+			- KICK: Kick users from a channel.
+			- NICK: Change your nickname.
+			- TOPIC: Set or view the channel topic.
+			- BOT: Get server information and time.
+
+			Rules and Guidelines:
+			- Be respectful to others.
+			- No spamming or flooding.
+			- Use common sense and have fun!
+
+			Thank you for using ZAZA Server!
+		)";
+		userit->sendMsg(RPL_INFO(userit->getNick(), info));
+		userit->sendMsg(RPL_ENDOFINFO(userit->getNick()));
+	}
+	else
+		userit->sendMsg(ERR_UNKNOWNCOMMAND(userit->getNick(), command));
 }
