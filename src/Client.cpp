@@ -109,7 +109,13 @@ void IRCClient::setup_client(IRCServer &server)
                         fds[j] = fds[j + 1];
                     }
 					users.erase(getUsers(i - 1));
-					// server.removeUserFromChannels(getUsers(i - 1));
+					std::vector<IRCChannel> currentChannels = server.getChannels();
+					std::vector<IRCUser>::iterator userit = getUsers(i - 1);
+					for (std::vector<IRCChannel>::iterator it = currentChannels.begin(); it != currentChannels.end(); ++it)
+					{
+						if (it->removeUser(userit))
+							it->brodcastMsg(RPL_QUIT(userit->getNick(), userit->getUsername(), "Ciao Amigos!"), userit);
+					}
                     numClients--;
                 }
             }

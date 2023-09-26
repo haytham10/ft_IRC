@@ -68,6 +68,7 @@
 		"mutex": "cpp",
 		"optional": "cpp",
 		"ratio": "cpp",
-		"string_view": "cpp"
+		"string_view": "cpp",
+		"thread": "cpp"
 	}
 }

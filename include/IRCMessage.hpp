@@ -16,8 +16,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "../include/Client.hpp"
-#include "../include/IRCServer.hpp"
+#include "Client.hpp"
+#include "IRCServer.hpp"
 
 #define MAX_USERNAME_LENGTH 18
 

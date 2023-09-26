@@ -43,6 +43,7 @@ class IRCChannel
 	public:
 		IRCChannel(const std::string &channelName, std::vector<IRCUser>::iterator creator);
 
+		std::vector<IRCUser> getUsers();
 		const std::string& getName() const;
 		const std::string& getTopic() const;
 		const std::string& getKey() const;

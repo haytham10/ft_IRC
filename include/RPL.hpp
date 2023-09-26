@@ -27,14 +27,13 @@
 # define ERR_NOTONCHANNEL(client, channel) (":irc.1337.ma 442 " + client + channel + " :The user is not on this channel.\r\n")
 # define ERR_USERNOTINCHANNEL(client, nickname, channel) (":irc.1337.ma 441 " + client + " " + nickname + channel + " :They aren't on that channel\r\n")
 # define RPL_NAMREPLY(client, channel, users) (":irc.1337.ma 353 " + client + " = " + channel + " :" + users + "\r\n")
-# define RPL_ENDOFNAMES(client, channel) (":irc.1337.ma 366 " + client + " " + channel + " :End of /NAMES list.\r\n")
+# define RPL_ENDOFNAMES(nickname, channel) (":irc.1337.ma 366 " + nickname + " " + channel + " ::End of /NAMES list." + "\r\n")
 
 
 // INVITE
 # define ERR_USERONCHANNEL(client, nick, channel) (":irc.1337.ma 443 " + client + " " + nick + channel + " :Is already on channel\r\n")
-// # define RPL_INVITING(client, nick, channel) (":irc.1337.ma 341 " + client + " INVITED " + nick + " to " + channel + "\r\n")
 # define RPL_INVITING(nick , user, clientHost, targetClient, channel)  (":irc.1337.ma 341 " + nick + "!" + user + "@" + clientHost + " " + targetClient + " " + channel + "\r\n")
-# define RPL_INVITE(client, invited, channel) (":irc.1337.ma " + client + " INVITE " + invited + " to " + channel + "\r\n")
+# define RPL_INVITE(client, invited, channel) (":" + client + " INVITE " + invited + " to " + channel + "\r\n")
 
 // JOIN
 # define RPL_JOIN(nick, user, clientHost, channel) (":" + nick + "!" + user + "@" +  clientHost  + " JOIN " + channel + "\r\n")

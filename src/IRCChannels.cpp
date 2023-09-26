@@ -26,6 +26,11 @@ IRCChannel::IRCChannel(const std::string &channelName, std::vector<IRCUser>::ite
 
 // Getter methods
 
+std::vector<IRCUser> IRCChannel::getUsers()
+{
+	return users;
+}
+
 const std::string& IRCChannel::getName() const
 {
     return name;
@@ -95,6 +100,7 @@ bool IRCChannel::removeUser(std::vector<IRCUser>::iterator user)
 		if (it->getNick() == user->getNick())
 		{
 			users.erase(it);
+			admins.erase(it);
 			return true;
 		}
 	}

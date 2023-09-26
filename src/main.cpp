@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	IRCClient client;
 	client.setup_client(server);
 
-
+  
     // Close the server socket
     close(server.getSock());
 
