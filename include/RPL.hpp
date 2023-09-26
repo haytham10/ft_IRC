@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 19:44:22 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/26 01:53:33 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/27 00:28:59 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 
 // JOIN
 # define RPL_JOIN(nick, user, clientHost, channel) (":" + nick + "!" + user + "@" +  clientHost  + " JOIN " + channel + "\r\n")
-# define RPL_JOIN_WATCH(nick, user, host, channel) (":" + nick + "!" + user + "@" +  host + " JOIN " + channel + "\r\n")
+# define RPL_JOIN_WATCH(nick, user, channel) (":" + nick + "!" + user + "@irc.1337.ma" + " JOIN " + channel + "\r\n")
 # define ERR_BADCHANNELKEY(client, channel) (":irc.1337.ma 475 " + client + " " + channel + " :Cannot join channel (+k)\r\n")
 # define ERR_CHANNELISFULL(client, channel) (":irc.1337.ma 471 " + client + " " + channel + " :Cannot join channel (+l)\r\n")
 # define ERR_INVITEONLYCHAN(client, channel) (":irc.1337.ma 473 " + client + " " + channel + " :Cannot join channel (+i)\r\n")
@@ -70,7 +70,7 @@
 # define ERR_NOSUCHNICK(client, target) (":irc.1337.ma 401 " + client + " " + target + " :No such nick/channel\r\n")
 # define ERR_NORECIPIENT(client) (":irc.1337.ma 411 " + client + " :No recipient given PRIVMSG\r\n")
 # define ERR_NOTEXTTOSEND(client) (":irc.1337.ma 412 " + client + " :No text to send\r\n")
-# define PRIVMSG_TO_USER(nickname, username, host, target, message) (":" + nickname + "!" + username + "@" + host + " PRIVMSG " + target + " :" + message + "\r\n")
+# define PRIVMSG_TO_USER(nickname, username, host, target, message) (":" + nickname + "!" + username + "@" + host + " PRIVMSG " + target  + " " + message + "\r\n")
 # define PRIVMSG_TO_CHANNEL(nickname, username, target, message) ":" + nickname + "!" + username + "@irc.1337.ma" + " PRIVMSG " + target + " :" + message + "\r\n"
 
 // TOPIC

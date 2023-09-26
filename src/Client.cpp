@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 20:11:28 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/26 00:56:46 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/27 00:18:55 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,10 @@ void IRCClient::setup_client(IRCServer &server)
             {			
 				char buffer[512];	
                 // Handle incoming data from the client (e.g., message parsing and command handling)
-                ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-                if (bytesRead != -1)
+               
+			    ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+				std::cout << "BUFF {" << buffer << "}";
+			    if (bytesRead != -1)
                 {
                     // Process the received data (e.g., parse IRC messages and handle commands)
                     msg.parseMsg(buffer);

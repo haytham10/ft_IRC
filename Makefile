@@ -6,9 +6,9 @@ INC = ./include/IRCServer.hpp ./include/IRCMessage.hpp ./include/Client.hpp ./in
 
 OBJS = $(SRCS:.cpp=.o)
 
-CC = g++
+CC = c++
 
-CFLAGS =
+CFLAGS = -std=c++98 -Wall -Wextra -Werror -g
 
 all: $(NAME)
 

@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 01:56:05 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/26 01:55:17 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/27 00:27:52 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,7 @@ void IRCMessage::cmd_JOIN(IRCServer &server, std::vector<IRCUser>::iterator user
 								userit->sendMsg(RPL_NAMREPLY(userit->getNick(), channelName, channel->getChannelUsers()));
 								userit->sendMsg(RPL_ENDOFNAMES(userit->getNick(), channelName));
 								// Brodcast JOIN message to the channel
-								channel->brodcastMsg(RPL_JOIN_WATCH(userit->getNick(), userit->getUsername(), userit->getHost(), channelName), userit);
+								channel->brodcastMsg(RPL_JOIN_WATCH(userit->getNick(), userit->getUsername(), channelName), userit);
 								channel->brodcastMsg(RPL_NAMREPLY(userit->getNick(), channelName, channel->getChannelUsers()), userit);
 								channel->brodcastMsg(RPL_ENDOFNAMES(userit->getNick(), channelName), userit);
 								//  Send channel topic if set
@@ -214,7 +214,7 @@ void IRCMessage::cmd_JOIN(IRCServer &server, std::vector<IRCUser>::iterator user
 						userit->sendMsg(RPL_NAMREPLY(userit->getNick(), channelName, channel->getChannelUsers()));
 						userit->sendMsg(RPL_ENDOFNAMES(userit->getNick(), channelName));
 						// Brodcast JOIN message to the channel
-						channel->brodcastMsg(RPL_JOIN_WATCH(userit->getNick(), userit->getUsername(), userit->getHost(), channelName), userit);
+						channel->brodcastMsg(RPL_JOIN_WATCH(userit->getNick(), userit->getUsername(), channelName), userit);
 						channel->brodcastMsg(RPL_NAMREPLY(userit->getNick(), channelName, channel->getChannelUsers()), userit);
 						channel->brodcastMsg(RPL_ENDOFNAMES(userit->getNick(), channelName), userit);
                        	if (channel->getTopic() != "")
@@ -695,6 +695,11 @@ void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<I
         if (targetUser)
         {
             // Send the private message to the target user
+			std::cout << "B -> {" << message << "}" <<std::endl;
+			if (message[0] != (char) ':')
+				message = " :" + message;
+			std::cout << "A -> {" << message << "}" <<std::endl;
+			std::cout << "msg ------->" << PRIVMSG_TO_USER(userit->getNick(), userit->getUsername(), userit->getHost(), target, message) << std::endl;
 			targetUser->sendMsg(PRIVMSG_TO_USER(userit->getNick(), userit->getUsername(), userit->getHost(), target, message));
         }
         else
@@ -733,36 +738,30 @@ void IRCMessage::cmd_BOT(std::vector<IRCUser>::iterator userit)
 		userit->sendMsg(RPL_VERSION(userit->getNick(), "1.0.0", "UNIX"));
 	else if (command == "info")
 	{
-		std::string info = R"(
-			Welcome to Our IRC Server!
+		std::string info = "Welcome to Our IRC Server!\n\n"
+                  "Server Information:\n"
+                  "- Server Name: ZAZA Server\n"
+                  "- Version: 1.0\n"
+                  "- Host: irc.1337.ma\n\n"
+                  "Made By:\n"
+                  "- Haytham Mokhtari (hmokhtar)\n"
+                  "- Hamza El Haddari (hel-hadd)\n"
+                  "- Amal Senhaji (amsenhaj)\n\n"
+                  "Supported Commands:\n"
+                  "- JOIN: Join a channel.\n"
+                  "- PART: Leave a channel.\n"
+                  "- PRIVMSG: Send private messages.\n"
+                  "- MODE: Change channel modes.\n"
+                  "- KICK: Kick users from a channel.\n"
+                  "- NICK: Change your nickname.\n"
+                  "- TOPIC: Set or view the channel topic.\n"
+                  "- BOT: Get server information and time.\n\n"
+                  "Rules and Guidelines:\n"
+                  "- Be respectful to others.\n"
+                  "- No spamming or flooding.\n"
+                  "- Use common sense and have fun!\n\n"
+                  "Thank you for using ZAZA Server!";
 
-			Server Information:
-			- Server Name: ZAZA Server
-			- Version: 1.0
-			- Host: irc.1337.ma
-
-			Made By:
-			- Haytham Mokhtari (hmokhtar)
-			- Hamza El Haddari (hel-hadd)
-			- Amal Senhaji (amsenhaj)
-
-			Supported Commands:
-			- JOIN: Join a channel.
-			- PART: Leave a channel.
-			- PRIVMSG: Send private messages.
-			- MODE: Change channel modes.
-			- KICK: Kick users from a channel.
-			- NICK: Change your nickname.
-			- TOPIC: Set or view the channel topic.
-			- BOT: Get server information and time.
-
-			Rules and Guidelines:
-			- Be respectful to others.
-			- No spamming or flooding.
-			- Use common sense and have fun!
-
-			Thank you for using ZAZA Server!
-		)";
 		userit->sendMsg(RPL_INFO(userit->getNick(), info));
 		userit->sendMsg(RPL_ENDOFINFO(userit->getNick()));
 	}
