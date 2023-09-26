@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 18:43:20 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/17 18:43:20 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/25 00:59:30 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,9 @@
 
 IRCChannel::IRCChannel(const std::string &channelName, std::vector<IRCUser>::iterator creator)
 	:name(channelName),
-	isTopicSet(false),
 	userLimit(0),
 	isInviteOnly(false),
+	isTopicSet(false),
 	isSecure(false)
 {
     users.push_back(*creator); // Add the creator as an initial channel member
@@ -268,4 +268,49 @@ void IRCChannel::setTopicSetter(const std::string &setter)
 const std::string& IRCChannel::getTopicSetter() const
 {
 	return topicSetter;
+}
+
+void IRCChannel::addAdmine(IRCUser *admin)
+{
+	if (!isAdmine(admin))
+	{
+		admins.push_back(*admin);
+	}
+}
+
+void IRCChannel::removeAdmine(IRCUser *admin)
+{
+	for (std::vector<IRCUser>::iterator it = admins.begin(); it != admins.end(); ++it)
+	{
+		if (it->getNick() == admin->getNick())
+		{
+			admins.erase(it);
+			return;
+		}
+	}
+}
+
+bool IRCChannel::isAdmine(IRCUser *user)
+{
+	for (std::vector<IRCUser>::iterator it = admins.begin(); it != admins.end(); ++it)
+	{
+		if (it->getNick() == user->getNick())
+			return true;
+	}
+	return false;
+}
+
+std::string IRCChannel::getChannelUsers()
+{
+	std::string s_users;
+	
+	for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		if (isAdmin(it))
+			s_users += "@"; // Add @ to the nick if the user is an admin
+		s_users += it->getNick();
+		if (it != users.end() - 1)
+			s_users += " ";
+	}
+	return s_users;
 }

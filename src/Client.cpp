@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 20:11:28 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/21 20:11:28 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/26 00:56:46 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ void IRCClient::setup_client(IRCServer &server)
                 socklen_t clientAddressLength = sizeof(clientAddress);
                 int clientSocket = accept(server.getSock(), (struct sockaddr *)&clientAddress, &clientAddressLength);
                 user.setSocket(clientSocket);
+				user.setHost(inet_ntoa(clientAddress.sin_addr));
                 fillUsers(user);
                 if (clientSocket != -1)
                 {
@@ -65,7 +66,7 @@ void IRCClient::setup_client(IRCServer &server)
         for (int i = 1; i <= numClients; i++)
         {
             if (fds[i].revents & POLLIN)
-            {
+            {			
 				char buffer[512];	
                 // Handle incoming data from the client (e.g., message parsing and command handling)
                 ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
@@ -89,7 +90,7 @@ void IRCClient::setup_client(IRCServer &server)
 					}
 
 					// Handle the commands
-					if (getUsers(i - 1)->getRegistered() == true)
+					if (userit->getRegistered() == true)
 						msg.CmdHandler((*this), server, userit);
 
 					// clear message params
@@ -101,11 +102,14 @@ void IRCClient::setup_client(IRCServer &server)
                 {
                     // Client has disconnected
                     close(fds[i].fd);
+					/// todo rm user 
                     // Remove the client from the pollfd array
                     for (int j = i; j < numClients; j++)
                     {
                         fds[j] = fds[j + 1];
                     }
+					users.erase(getUsers(i - 1));
+					// server.removeUserFromChannels(getUsers(i - 1));
                     numClients--;
                 }
             }

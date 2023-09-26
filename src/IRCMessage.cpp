@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 23:29:26 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/17 10:38:40 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:22:54 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vecto
 	else if (command == "NICK")
 		cmd_NICK(client, userit);
 	else if (command == "USER")
-		cmd_USER(client, userit);
+		cmd_USER(userit);
 	else if (userit->getRegistered() == false)
 		userit->sendMsg(ERR_NOTREGISTERED(userit->getNick()));
 }
@@ -84,17 +84,19 @@ void IRCMessage::authentication(IRCClient &client, IRCServer &server, std::vecto
 void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
 {
 	if (command == "JOIN")
-		cmd_JOIN(client, server, userit);
+		cmd_JOIN(server, userit);
 	else if (command == "KICK")
 		cmd_KICK(client, server, userit);
 	else if (command == "MODE")
 		cmd_MODE(client, server, userit);
 	else if (command == "TOPIC")
-		cmd_TOPIC(client, server, userit);
+		cmd_TOPIC(server, userit);
 	else if (command == "INVITE")
 		cmd_INVITE(client, server, userit);
 	else if (command == "PRIVMSG")
 		cmd_PRIVMSG(client, server, userit);
+	else if (command == "PONG")
+		cmd_PONG(client, server, userit);
 	else if (command == "PASS" || command == "NICK" || command == "USER")
 		return ;
 	else

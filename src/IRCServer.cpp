@@ -7,22 +7,22 @@ void	IRCServer::setup_server()
     // Create a socket
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1) {
-       // perror("socket");
-        //exit(1);
+       perror("socket");
+        exit(1);
     }
 
 	// Reuse the socket address
 	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR,  (char *) &opt, sizeof(opt))){
-		//perror("setsockopt");
+		perror("setsockopt");
 		close(serverSocket);
-		//exit(1);
+		exit(1);
 	}
 
 	// Make the server socket non-blocking
 	if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) == -1) {
-		//perror("fcntl");
+		perror("fcntl");
 		close(serverSocket);
-		//exit(1);
+		exit(1);
 	}
 
     // Set up the server address
@@ -33,16 +33,16 @@ void	IRCServer::setup_server()
 
     // Bind the socket to the server address
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
-      //  perror("bind");
-        close(serverSocket);
-     //   exit(1);
+		perror("bind");
+	   close(serverSocket);
+       exit(1);
     }
 
     // Listen for incoming connections
     if (listen(serverSocket, MAX_CLIENTS) == -1) {
-       // perror("listen");
-        close(serverSocket);
-       // exit(1);
+    	perror("listen");
+    	close(serverSocket);
+    	exit(1);
     }
 
     std::cout << "Server is listening on port " << port << std::endl;

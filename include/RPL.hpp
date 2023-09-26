@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 19:44:22 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/21 19:44:22 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:53:33 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,27 +26,31 @@
 # define ERR_NOSUCHCHANNEL(client, channel) (":irc.1337.ma 403 " + client + channel + " :No such channel\r\n")
 # define ERR_NOTONCHANNEL(client, channel) (":irc.1337.ma 442 " + client + channel + " :The user is not on this channel.\r\n")
 # define ERR_USERNOTINCHANNEL(client, nickname, channel) (":irc.1337.ma 441 " + client + " " + nickname + channel + " :They aren't on that channel\r\n")
+# define RPL_NAMREPLY(client, channel, users) (":irc.1337.ma 353 " + client + " = " + channel + " :" + users + "\r\n")
+# define RPL_ENDOFNAMES(client, channel) (":irc.1337.ma 366 " + client + " " + channel + " :End of /NAMES list.\r\n")
+
 
 // INVITE
 # define ERR_USERONCHANNEL(client, nick, channel) (":irc.1337.ma 443 " + client + " " + nick + channel + " :Is already on channel\r\n")
-# define RPL_INVITING(client, nick, channel) (":irc.1337.ma 341 " + client + " INVITED " + nick + " to " + channel + "\r\n")
+// # define RPL_INVITING(client, nick, channel) (":irc.1337.ma 341 " + client + " INVITED " + nick + " to " + channel + "\r\n")
+# define RPL_INVITING(nick , user, clientHost, targetClient, channel)  (":irc.1337.ma 341 " + nick + "!" + user + "@" + clientHost + " " + targetClient + " " + channel + "\r\n")
 # define RPL_INVITE(client, invited, channel) (":irc.1337.ma " + client + " INVITE " + invited + " to " + channel + "\r\n")
 
 // JOIN
-# define RPL_JOIN(nick, channel) (nick + " JOIN :" +  channel + "\r\n")
-# define ERR_BADCHANNELKEY(client, channel) (":irc.1337.ma 475 " + client + channel + " :Cannot join channel (+k)\r\n")
-# define ERR_CHANNELISFULL(client, channel) (":irc.1337.ma 471 " + client + channel + " :Cannot join channel (+l)\r\n")
-# define ERR_INVITEONLYCHAN(client, channel) (":irc.1337.ma 473 " + client + channel + " :Cannot join channel (+i)\r\n")
-# define ERR_CANTJOINCHANNEL(client, channel) (":irc.1337.ma " + client + channel + " :Cannot join channel\r\n")
+# define RPL_JOIN(nick, user, clientHost, channel) (":" + nick + "!" + user + "@" +  clientHost  + " JOIN " + channel + "\r\n")
+# define RPL_JOIN_WATCH(nick, user, host, channel) (":" + nick + "!" + user + "@" +  host + " JOIN " + channel + "\r\n")
+# define ERR_BADCHANNELKEY(client, channel) (":irc.1337.ma 475 " + client + " " + channel + " :Cannot join channel (+k)\r\n")
+# define ERR_CHANNELISFULL(client, channel) (":irc.1337.ma 471 " + client + " " + channel + " :Cannot join channel (+l)\r\n")
+# define ERR_INVITEONLYCHAN(client, channel) (":irc.1337.ma 473 " + client + " " + channel + " :Cannot join channel (+i)\r\n")
+# define ERR_CANTJOINCHANNEL(client, channel) (":irc.1337.ma " + client + " " + channel + " :Cannot join channel\r\n")
 # define ERR_ALREADYJOINED(client, channel) (":irc.1337.ma " + client + channel + " :You have already joined this channel\r\n")
 
 // KICK
 # define ERR_CHANOPRIVSNEEDED(client, channel) (":irc.1337.ma 482 " + client +  channel + " :You're not channel operator\r\n")
-# define RPL_KICK(client, channel, kicked, reason) (client + " KICK " + channel + " " + kicked + " :" + reason + "\r\n")
+# define RPL_KICK(client, username, channel, kicked, reason) (":" + client + "!" + username + "@irc.1337.ma" + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
 
 // MODE
-# define MODE_CHANNELMSG(channel, mode) (":irc.1337.ma MODE #" + channel + " " + mode + "\r\n")
-# define RPL_CHANNELMODEIS(client, channel, mode) (":irc.1337.ma 324 " + client + " " + channel + " " + mode + "\r\n")
+# define RPL_CHANNELMODEIS(client, channel, mode, nada) (":irc.1337.ma 324 " + client + " " + channel + " " + mode + nada + "\r\n")
 # define ERR_UMODEUNKNOWNFLAG(client) (":irc.1337.ma 501 " + client + " :Unknown MODE flag\r\n")
 # define RPL_CREATIONTIME(client, channel, time) (":irc.1337.ma 329 " + client + " " + channel + " " + time + "\r\n")
 
@@ -67,7 +71,8 @@
 # define ERR_NOSUCHNICK(client, target) (":irc.1337.ma 401 " + client + " " + target + " :No such nick/channel\r\n")
 # define ERR_NORECIPIENT(client) (":irc.1337.ma 411 " + client + " :No recipient given PRIVMSG\r\n")
 # define ERR_NOTEXTTOSEND(client) (":irc.1337.ma 412 " + client + " :No text to send\r\n")
-# define RPL_PRIVMSG(nick, username, target, message) (":irc.1337.ma " + nick + "!" + username + "@irc.1337.ma PRIVMSG " + target + " :" + message + "\r\n")
+# define PRIVMSG_TO_USER(nickname, username, host, target, message) (":" + nickname + "!" + username + "@" + host + " PRIVMSG " + target + " :" + message + "\r\n")
+# define PRIVMSG_TO_CHANNEL(nickname, username, target, message) ":" + nickname + "!" + username + "@irc.1337.ma" + " PRIVMSG " + target + " :" + message + "\r\n"
 
 // TOPIC
 # define RPL_TOPIC(client, channel, topic) (":irc.1337.ma 332 " + client + " " + channel + " " + topic + "\r\n")
@@ -76,5 +81,8 @@
 
 // USER
 # define ERR_ALREADYREGISTERED(client) (":irc.1337.ma 462 " + client + " :You may not reregister.\r\n")
+
+// QUIT
+# define RPL_QUIT(nickname, username, message) (":" + nickname + "!" + username + "@irc.1337.ma" + " QUIT :" + message + "\r\n")
 
 #endif

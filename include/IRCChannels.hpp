@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 18:34:59 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/17 18:34:59 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/26 00:32:46 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class IRCChannel
 		const std::string& getKey() const;
 		const std::string getMode() const;
 		const std::string& getTopicSetter() const;
+		const std::string& getModes() const;
 		int getUserLimit() const;
 		bool isInviteOnlyChannel() const;
 		bool isTopicSetChannel() const;
@@ -71,6 +72,10 @@ class IRCChannel
 		void addAdmin(std::vector<IRCUser>::iterator admin);
 		void removeAdmin(std::vector<IRCUser>::iterator admin);
 		bool isAdmin(std::vector<IRCUser>::iterator user);
+		
+		void addAdmine(IRCUser *admin);
+		void removeAdmine(IRCUser *admin);
+		bool isAdmine(IRCUser *user);
 
 		bool inviteUser(const std::string &name);
 		bool isUserInvited(const std::string& userName) const;
@@ -79,6 +84,8 @@ class IRCChannel
 
 		void setTime();
 		time_t getTime() const;
+
+		std::string getChannelUsers();
 
 		std::vector<std::string> splitString(const std::string& input, char delimiter);
 };

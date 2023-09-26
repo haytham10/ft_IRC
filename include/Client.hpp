@@ -13,6 +13,7 @@ class IRCUser
 		std::string nick;
 		std::string username;
 		std::string realname;
+		std::string host;
 		bool registered;
 		bool nickSet;
 		int auth;
@@ -44,6 +45,16 @@ class IRCUser
 		int	getSocket() const
 		{
 			return fd;
+		}
+
+		void setHost(std::string host)
+		{
+			this->host = host;
+		}
+
+		std::string getHost() const
+		{
+			return host;
 		}
 
 		void setNick(std::string nick)
@@ -142,6 +153,18 @@ class IRCClient
 		int	getNumClients() const
 		{
 			return numClients;
+		}
+
+		void removeUser(std::vector<IRCUser>::iterator userit)
+		{
+			for (std::vector<IRCUser>::iterator it = users.begin(); it != users.end(); ++it)
+			{
+				if (it->getNick() == userit->getNick())
+				{
+					users.erase(it);
+					return;
+				}
+			}
 		}
 };
 
