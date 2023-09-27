@@ -67,9 +67,6 @@ IRCChannel* IRCServer::getChannel(const std::string& name)
 
 void IRCServer::cleanUser(IRCClient* client, std::vector<IRCUser>::iterator userit)
 {
-    // Close the user's socket
-    close(userit->getSocket());
-
     // Remove the user from all channels they are in
     for (std::vector<IRCChannel>::iterator it = channels.begin(); it != channels.end(); ++it)
     {
@@ -78,4 +75,7 @@ void IRCServer::cleanUser(IRCClient* client, std::vector<IRCUser>::iterator user
 
     // Remove the user from the users vector
 	client->removeUser(userit);
+	
+    // Close the user's socket
+    close(userit->getSocket());
 }

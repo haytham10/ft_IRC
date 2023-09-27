@@ -6,7 +6,7 @@
 /*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/21 20:11:28 by hmokhtar          #+#    #+#             */
-/*   Updated: 2023/09/27 00:18:55 by hmokhtar         ###   ########.fr       */
+/*   Updated: 2023/09/27 13:32:17 by hmokhtar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,9 +108,6 @@ void IRCClient::setup_client(IRCServer &server)
 						// Remove the client from the pollfd array
 						for (int j = i; j < numClients - 1; j++)
 							fds[j] = fds[j + 1];
-
-						// Clean up the user
-						server.cleanUser(this, getUsers(i - 1));
 
 						// Decrement the number of clients
 						numClients--;

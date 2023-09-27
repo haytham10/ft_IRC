@@ -1,14 +1,19 @@
-///////////////////////////////////////////////////////////////////////////////
-////////////////////////// THIS IS A TEST ONLY!!! /////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hmokhtar <hmokhtar@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/09/27 13:34:47 by hmokhtar          #+#    #+#             */
+/*   Updated: 2023/09/27 13:38:19 by hmokhtar         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../include/IRCMessage.hpp"
 #include "../include/IRCServer.hpp"
 #include "../include/Client.hpp"
-//
 #include <stdlib.h>
-//
 
 int main(int argc, char* argv[])
 {
@@ -21,9 +26,7 @@ int main(int argc, char* argv[])
 	int port;
 	try
 	{
-		//
 		port = atoi(argv[1]);
-		//
 	}
 	catch (std::exception &e)
 	{
@@ -31,7 +34,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	if (port <= 0 || port > 65535)
+	if (port <= 1023 || port > 65535)
 	{
 		std::cerr << "Invalid port number!" << std::endl;
 		return 1;
