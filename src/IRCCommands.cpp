@@ -695,11 +695,8 @@ void IRCMessage::cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<I
         if (targetUser)
         {
             // Send the private message to the target user
-			std::cout << "B -> {" << message << "}" <<std::endl;
 			if (message[0] != (char) ':')
 				message = " :" + message;
-			std::cout << "A -> {" << message << "}" <<std::endl;
-			std::cout << "msg ------->" << PRIVMSG_TO_USER(userit->getNick(), userit->getUsername(), userit->getHost(), target, message) << std::endl;
 			targetUser->sendMsg(PRIVMSG_TO_USER(userit->getNick(), userit->getUsername(), userit->getHost(), target, message));
         }
         else
@@ -744,7 +741,7 @@ void IRCMessage::cmd_BOT(std::vector<IRCUser>::iterator userit)
                   "- Version: 1.0\n"
                   "- Host: irc.1337.ma\n\n"
                   "Made By:\n"
-                  "- Haytham Mokhtari (hmokhtar)\n"
+                  "- Haytham Mokhtari (hmokhtar) aka: AGENT 32\n"
                   "- Hamza El Haddari (hel-hadd)\n"
                   "- Amal Senhaji (amsenhaj)\n\n"
                   "Supported Commands:\n"
@@ -767,4 +764,19 @@ void IRCMessage::cmd_BOT(std::vector<IRCUser>::iterator userit)
 	}
 	else
 		userit->sendMsg(ERR_UNKNOWNCOMMAND(userit->getNick(), command));
+}
+
+void IRCMessage::cmd_QUIT(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit)
+{
+	if (getCount() == 1)
+	{
+		std::string quitMsg = getParams()[0];
+		if (quitMsg.empty())
+			quitMsg = "Client Quit";
+		userit->sendMsg(RPL_QUIT(userit->getNick(), userit->getUsername(), quitMsg));
+		
+	}
+	else
+		userit->sendMsg(RPL_QUIT(userit->getNick(), userit->getUsername(), "Client Quit"));
+    server.cleanUser(&client, userit);
 }

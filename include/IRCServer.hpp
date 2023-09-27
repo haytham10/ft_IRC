@@ -16,6 +16,8 @@
 #include "Client.hpp"
 
 class IRCChannel;
+class IRCClient;
+class IRCUser;
 
 class IRCServer
 {
@@ -57,6 +59,9 @@ class IRCServer
 		// Methods to manage channels
 		void 		addChannel(const IRCChannel& channel);
 		IRCChannel* getChannel(const std::string& name);
+
+		// Methods to manage clients
+		void	cleanUser(IRCClient* client, std::vector<IRCUser>::iterator userit);
 };
 
 #endif

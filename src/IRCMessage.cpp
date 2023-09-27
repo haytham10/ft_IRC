@@ -99,6 +99,8 @@ void IRCMessage::CmdHandler(IRCClient &client, IRCServer &server, std::vector<IR
 		cmd_PONG(client, server, userit);
 	else if (command == "BOT")
 		cmd_BOT(userit);
+	else if (command == "QUIT")
+		cmd_QUIT(client, server, userit);
 	else if (command == "PASS" || command == "NICK" || command == "USER")
 		return ;
 	else

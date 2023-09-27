@@ -50,6 +50,8 @@ class IRCMessage
 		void	cmd_PRIVMSG(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_PONG(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
 		void	cmd_BOT(std::vector<IRCUser>::iterator userit);
+		void	cmd_QUIT(IRCClient &client, IRCServer &server, std::vector<IRCUser>::iterator userit);
+	
 		///////////////////////////////////
 		const std::string &getCommand() const
 		{

@@ -34,8 +34,8 @@ void	IRCServer::setup_server()
     // Bind the socket to the server address
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
 		perror("bind");
-	   close(serverSocket);
-       exit(1);
+		close(serverSocket);
+		exit(1);
     }
 
     // Listen for incoming connections
@@ -60,10 +60,22 @@ IRCChannel* IRCServer::getChannel(const std::string& name)
 	for (std::vector<IRCChannel>::iterator it = channels.begin(); it != channels.end(); ++it)
 	{
 		if (it->getName() == name)
-		{
 			return &(*it);
-		}
 	}
 	return NULL;
 }
 
+void IRCServer::cleanUser(IRCClient* client, std::vector<IRCUser>::iterator userit)
+{
+    // Close the user's socket
+    close(userit->getSocket());
+
+    // Remove the user from all channels they are in
+    for (std::vector<IRCChannel>::iterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        it->removeUser(userit);
+    }
+
+    // Remove the user from the users vector
+	client->removeUser(userit);
+}

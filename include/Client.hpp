@@ -150,6 +150,16 @@ class IRCClient
 			return fds[numClients];
 		}
 
+		int getFdsNum() const
+		{
+			return numClients;
+		}
+
+		void setNumClients(int numClients)
+		{
+			this->numClients = numClients;
+		}
+
 		int	getNumClients() const
 		{
 			return numClients;

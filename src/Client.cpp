@@ -71,7 +71,6 @@ void IRCClient::setup_client(IRCServer &server)
                 // Handle incoming data from the client (e.g., message parsing and command handling)
                
 			    ssize_t bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-				std::cout << "BUFF {" << buffer << "}";
 			    if (bytesRead != -1)
                 {
                     // Process the received data (e.g., parse IRC messages and handle commands)
@@ -97,29 +96,28 @@ void IRCClient::setup_client(IRCServer &server)
 
 					// clear message params
 					msg.clearParams();
-
-                    // Example: Echo the received data back to the client
                 }
                 else
-                {
-                    // Client has disconnected
-                    close(fds[i].fd);
-					/// todo rm user 
-                    // Remove the client from the pollfd array
-                    for (int j = i; j < numClients; j++)
-                    {
-                        fds[j] = fds[j + 1];
-                    }
-					users.erase(getUsers(i - 1));
-					std::vector<IRCChannel> currentChannels = server.getChannels();
-					std::vector<IRCUser>::iterator userit = getUsers(i - 1);
-					for (std::vector<IRCChannel>::iterator it = currentChannels.begin(); it != currentChannels.end(); ++it)
+				{
+					// Check the error code to determine the cause of recv failure
+					if (errno == ECONNRESET || errno == ECONNABORTED)
 					{
-						if (it->removeUser(userit))
-							it->brodcastMsg(RPL_QUIT(userit->getNick(), userit->getUsername(), "Ciao Amigos!"), userit);
+						// Client has disconnected
+						close(fds[i].fd);
+
+						// Remove the client from the pollfd array
+						for (int j = i; j < numClients - 1; j++)
+							fds[j] = fds[j + 1];
+
+						// Clean up the user
+						server.cleanUser(this, getUsers(i - 1));
+
+						// Decrement the number of clients
+						numClients--;
 					}
-                    numClients--;
-                }
+					else
+						perror("recv");
+				}
             }
         }
     }
